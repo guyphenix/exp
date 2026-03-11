@@ -2,467 +2,365 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Animation Incentives Across Europe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Frames & Funds — Animation Incentives Across Europe</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+:root{--ink:#12100e;--cream:#f4efe6;--gold:#e09a18;--gold-light:#f5c84a;--sidebar-w:380px;--hh:58px;--peek:68px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);overflow:hidden;}
 
-:root {
-  --ink: #1a1206;
-  --cream: #f5f0e8;
-  --gold: #e8a020;
-  --gold-light: #f5c84a;
-  --sidebar-bg: #1c1810;
+/* CURSOR */
+#cursor{position:fixed;pointer-events:none;z-index:9999;transform:translate(-16px,-40px);transition:transform .06s ease;filter:drop-shadow(1px 3px 5px rgba(0,0,0,.5));}
+#cursor svg{width:40px;height:40px;}
+body.on-country #cursor{transform:translate(-16px,-40px) scale(1.18);}
+@media(hover:none){#cursor{display:none!important;}html,body{cursor:auto;}}
+
+/* HEADER */
+header{position:fixed;top:0;left:0;right:0;height:var(--hh);background:var(--ink);border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:300;padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right));}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-strip{display:flex;gap:3px;}
+.ls-hole{width:7px;height:7px;border-radius:1.5px;background:var(--gold);}
+.logo h1{font-family:'Syne',sans-serif;font-size:clamp(1rem,3.5vw,1.35rem);font-weight:800;letter-spacing:-.02em;line-height:1;}
+.logo h1 em{color:var(--gold);font-style:normal;}
+.logo-sub{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;opacity:.42;margin-top:3px;font-weight:300;}
+.header-hint{font-size:.76rem;opacity:.38;font-style:italic;}
+@media(max-width:520px){.header-hint{display:none;}}
+
+/* LAYOUT */
+#app{display:flex;height:100vh;padding-top:var(--hh);}
+
+/* MAP */
+#map-wrap{flex:1;position:relative;overflow:hidden;background:#1a2a38;background-image:radial-gradient(ellipse at 30% 60%,rgba(30,79,143,.18) 0%,transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(31,122,110,.12) 0%,transparent 50%);}
+#map-wrap::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.025) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:1;}
+#map-svg{width:100%;height:100%;position:relative;z-index:2;display:block;}
+
+.country-path{stroke:rgba(255,255,255,.18);stroke-width:.6px;stroke-linejoin:round;cursor:none;transition:filter .15s ease,stroke .15s ease,stroke-width .15s ease;}
+@media(hover:none){.country-path{cursor:pointer;}}
+.country-path.has-data:hover{filter:brightness(1.35) saturate(1.3);stroke:rgba(255,255,255,.7);stroke-width:1.2px;}
+.country-path.selected{filter:brightness(1.45) saturate(1.5) drop-shadow(0 0 8px rgba(224,154,24,.55))!important;stroke:var(--gold)!important;stroke-width:1.8px!important;}
+.country-path.no-data{fill:#2a3a4a;opacity:.6;}
+
+#map-tooltip{position:absolute;pointer-events:none;background:rgba(18,16,14,.9);color:var(--cream);border:1px solid var(--gold);border-radius:6px;padding:5px 12px;font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;white-space:nowrap;z-index:100;opacity:0;transition:opacity .15s;transform:translate(14px,-50%);}
+#map-tooltip.visible{opacity:1;}
+@media(hover:none){#map-tooltip{display:none;}}
+
+#hint-bubble{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(18,16,14,.8);border:1px solid rgba(224,154,24,.35);border-radius:30px;padding:8px 18px;font-size:.76rem;white-space:nowrap;pointer-events:none;z-index:50;animation:hint-pulse 2.8s ease-in-out infinite;transition:opacity .5s;}
+@keyframes hint-pulse{0%,100%{opacity:.75}50%{opacity:.38}}
+#attribution{position:absolute;bottom:6px;right:10px;font-size:.58rem;opacity:.28;pointer-events:none;z-index:50;}
+
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:#1a2a38;z-index:20;font-size:.85rem;color:rgba(244,239,230,.38);}
+.spin{animation:spin 1s linear infinite;display:inline-block;font-size:2rem;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* DESKTOP SIDEBAR */
+#sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--ink);border-left:2px solid rgba(224,154,24,.3);display:flex;flex-direction:column;overflow:hidden;position:relative;}
+
+/* MOBILE BOTTOM SHEET */
+@media(max-width:699px){
+  #app{flex-direction:column;position:relative;}
+  #map-wrap{height:calc(100% - var(--peek));flex:none;}
+  #sidebar{position:fixed;bottom:0;left:0;right:0;width:100%;border-left:none;border-top:2px solid rgba(224,154,24,.4);border-radius:16px 16px 0 0;height:88vh;transform:translateY(calc(100% - var(--peek)));transition:transform .38s cubic-bezier(.32,.72,0,1);z-index:200;padding-bottom:env(safe-area-inset-bottom);}
+  #sidebar.sheet-open{transform:translateY(0);}
+  #hint-bubble{bottom:calc(var(--peek) + 10px);font-size:.72rem;}
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--cream);
-  color: var(--ink);
-  overflow: hidden;
-  height: 100vh;
-  cursor: none;
+/* SHEET HANDLE */
+.sheet-handle-bar{display:none;}
+@media(max-width:699px){
+  .sheet-handle-bar{display:flex;flex-direction:column;align-items:center;gap:5px;height:var(--peek);padding-top:10px;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .handle-pill{width:38px;height:4px;background:rgba(255,255,255,.22);border-radius:2px;}
+  .handle-text{font-size:.73rem;opacity:.5;letter-spacing:.03em;transition:color .2s,opacity .2s;}
+  .handle-text.active{color:var(--gold);opacity:1;}
 }
 
-/* ── CURSOR ── */
-#cursor {
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-4px, -44px);
-  filter: drop-shadow(2px 3px 5px rgba(0,0,0,0.4));
-}
-#cursor svg { width: 42px; height: 42px; }
-body.on-country #cursor { transform: translate(-4px, -44px) scale(1.15); }
-
-/* ── HEADER ── */
-header {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 58px;
-  background: var(--ink);
-  border-bottom: 3px solid var(--gold);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 28px;
-  z-index: 200;
-}
-.logo { display: flex; align-items: center; gap: 12px; }
-.logo-reel {
-  width: 30px; height: 30px;
-  border: 2.5px solid var(--gold);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-}
-.logo-reel::before {
-  content:'';
-  width: 8px; height: 8px;
-  background: var(--gold);
-  border-radius: 50%;
-}
-.logo h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--cream);
-  letter-spacing: -0.02em;
-}
-.logo h1 span { color: var(--gold); }
-.logo-sub {
-  font-size: 0.68rem;
-  color: rgba(245,240,232,0.45);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-top: 1px;
-}
-.header-hint {
-  font-size: 0.78rem;
-  color: rgba(245,240,232,0.45);
-  font-style: italic;
+/* IDLE */
+#idle{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:36px 30px;text-align:center;gap:16px;overflow-y:auto;}
+.idle-anim{font-size:3.6rem;animation:idle-float 3.2s ease-in-out infinite;}
+@keyframes idle-float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+#idle h2{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;line-height:1.35;color:var(--gold);}
+#idle p{font-size:.82rem;line-height:1.65;opacity:.5;}
+.idle-chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:4px;}
+.chip{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:3px 10px;font-size:.71rem;opacity:.65;}
+@media(max-width:699px){
+  #idle{padding:10px 22px 16px;justify-content:flex-start;gap:10px;}
+  .idle-anim{font-size:2.2rem;animation:none;}
+  #idle h2{font-size:1rem;}
+  #idle p{font-size:.78rem;}
 }
 
-/* ── LAYOUT ── */
-#app {
-  display: flex;
-  height: 100vh;
-  padding-top: 58px;
-}
+/* PANEL */
+#panel{display:none;flex-direction:column;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+#panel.open{display:flex;}
+#panel::-webkit-scrollbar{width:3px;}
+#panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px;}
 
-/* ── MAP ── */
-#map-wrap {
-  flex: 1;
-  position: relative;
-  background: #b8d4e8;
-  overflow: hidden;
-}
-#map-wrap svg { width: 100%; height: 100%; display: block; }
+.p-head{padding:22px 24px 16px;border-bottom:1px solid rgba(255,255,255,.08);position:relative;animation:fadeUp .28s ease both;flex-shrink:0;}
+.p-flag-name{display:flex;align-items:center;gap:12px;margin-bottom:5px;}
+.p-flag{font-size:2rem;}
+.p-name{font-family:'Syne',sans-serif;font-size:clamp(1.2rem,4vw,1.5rem);font-weight:800;letter-spacing:-.02em;line-height:1;}
+.p-tagline{font-size:.77rem;font-style:italic;opacity:.5;line-height:1.45;margin-top:4px;}
+.p-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:var(--cream);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:background .2s;-webkit-tap-highlight-color:transparent;}
+.p-close:hover,.p-close:active{background:rgba(255,255,255,.18);}
 
-.country-path {
-  stroke: rgba(255,255,255,0.65);
-  stroke-width: 0.7;
-  stroke-linejoin: round;
-  cursor: none;
-  transition: filter 0.15s, stroke-width 0.15s;
-}
-.country-path:hover { filter: brightness(1.2) saturate(1.3); stroke: #fff; stroke-width: 1.5; }
-.country-path.active { stroke: var(--ink); stroke-width: 2; filter: brightness(1.22) saturate(1.4); }
-.country-path.no-data { fill: #c8d8e4; }
-.country-path.no-data:hover { filter: brightness(1.04); stroke: rgba(255,255,255,0.65); stroke-width: 0.7; }
+.p-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 24px;border-bottom:1px solid rgba(255,255,255,.08);animation:fadeUp .28s .04s ease both;flex-shrink:0;}
+.stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--gold);border-radius:8px;padding:9px 12px;}
+.stat-l{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;opacity:.42;margin-bottom:4px;}
+.stat-v{font-family:'Syne',sans-serif;font-weight:700;color:var(--gold-light);line-height:1.1;}
+.stat-v.lg{font-size:clamp(1.2rem,4vw,1.5rem);}
+.stat-v.sm{font-size:.78rem;}
+.stat.full{grid-column:1/-1;}
 
-.country-label {
-  font-family: 'Syne', sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  fill: rgba(26,18,6,0.72);
-  pointer-events: none;
-  text-anchor: middle;
-  dominant-baseline: middle;
-  letter-spacing: 0.05em;
-}
+.p-sec{padding:14px 24px;border-bottom:1px solid rgba(255,255,255,.06);animation:fadeUp .28s ease both;flex-shrink:0;}
+.p-sec:nth-child(3){animation-delay:.07s}
+.p-sec:nth-child(4){animation-delay:.11s}
+.p-sec:nth-child(5){animation-delay:.15s}
+.p-sec:nth-child(6){animation-delay:.19s}
+.sec-title{font-family:'Syne',sans-serif;font-size:.65rem;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.sec-title::after{content:'';flex:1;height:1px;background:rgba(224,154,24,.2);}
+.p-text{font-size:.82rem;line-height:1.65;opacity:.8;}
 
-/* Hover tooltip */
-#tooltip {
-  position: fixed;
-  background: var(--ink);
-  color: var(--cream);
-  padding: 6px 13px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-family: 'DM Sans', sans-serif;
-  pointer-events: none;
-  z-index: 500;
-  border: 1px solid rgba(232,160,32,0.4);
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.15s;
-  transform: translate(14px, -110%);
-}
-#tooltip.visible { opacity: 1; }
-#tooltip .tt-rate { color: var(--gold-light); font-family: 'Syne', sans-serif; font-weight: 700; }
+.expand-row{margin-top:9px;}
+.expand-btn{background:none;border:1px dashed rgba(255,255,255,.18);color:rgba(255,255,255,.52);border-radius:5px;padding:6px 12px;font-size:.75rem;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;text-align:left;font-family:'DM Sans',sans-serif;transition:all .18s;-webkit-tap-highlight-color:transparent;}
+.expand-btn:hover,.expand-btn:active{background:rgba(255,255,255,.06);color:var(--cream);border-color:rgba(255,255,255,.3);}
+.expand-btn .arrow{transition:transform .22s;margin-left:auto;}
+.expand-btn.open .arrow{transform:rotate(180deg);}
+.expand-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.expand-body.open{max-height:600px;}
+.expand-inner{padding-top:10px;font-size:.8rem;line-height:1.7;opacity:.7;}
 
-/* ── SIDEBAR ── */
-#sidebar {
-  width: 340px;
-  background: var(--sidebar-bg);
-  color: var(--cream);
-  display: flex;
-  flex-direction: column;
-  border-left: 3px solid var(--gold);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-#idle-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 36px 32px;
-  text-align: center;
-  gap: 18px;
-}
-.idle-anim { font-size: 3.5rem; animation: bob 3s ease-in-out infinite; }
-@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-#idle-panel h2 { font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 700; color: var(--gold); line-height: 1.4; }
-#idle-panel p { font-size: 0.82rem; opacity: 0.55; line-height: 1.65; }
-.idle-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
-.chip { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 4px 11px; font-size: 0.73rem; opacity: 0.8; }
+.bcast{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:11px 14px;margin-top:4px;}
+.bcast-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--gold-light);margin-bottom:3px;}
+.bcast-note{font-size:.76rem;opacity:.56;line-height:1.5;}
 
-#country-panel { display: none; flex-direction: column; height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
-#country-panel.open { display: flex; }
+.studios{list-style:none;margin-top:4px;}
+.studios li{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.8rem;opacity:.85;}
+.studios li:last-child{border:none;}
+.s-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);margin-top:5px;flex-shrink:0;}
+.s-name{font-weight:500;line-height:1.3;}
+.s-note{font-size:.72rem;opacity:.52;font-style:italic;margin-top:1px;}
 
-.cp-head { padding: 22px 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); position: relative; }
-.cp-flag-name { display: flex; align-items: center; gap: 12px; }
-.cp-flag { font-size: 2.2rem; }
-.cp-name { font-family: 'Syne', sans-serif; font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
-.cp-tagline { font-size: 0.78rem; font-style: italic; opacity: 0.5; margin-top: 7px; line-height: 1.5; }
-.close-btn { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.7); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: all 0.18s; }
-.close-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
-
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-.stat { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: 8px; padding: 10px 12px; position: relative; overflow: hidden; }
-.stat::before { content:''; position: absolute; top:0; left:0; width: 3px; height: 100%; background: var(--gold); border-radius: 8px 0 0 8px; }
-.stat-lbl { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.45; margin-bottom: 4px; }
-.stat-val { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--gold-light); line-height: 1; }
-.stat-val.sm { font-size: 0.82rem; line-height: 1.3; margin-top: 2px; }
-.stat.full { grid-column: 1 / -1; }
-
-.cp-section { padding: 14px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-.sec-title { font-family: 'Syne', sans-serif; font-size: 0.67rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; gap: 7px; }
-.sec-title::after { content:''; flex:1; height: 1px; background: rgba(232,160,32,0.2); }
-.sec-text { font-size: 0.82rem; line-height: 1.65; opacity: 0.8; }
-
-.expand-btn { background: none; border: 1px dashed rgba(255,255,255,0.18); color: rgba(255,255,255,0.5); border-radius: 6px; padding: 6px 12px; font-size: 0.75rem; cursor: pointer; margin-top: 9px; width: 100%; display: flex; align-items: center; gap: 6px; transition: all 0.18s; font-family: 'DM Sans', sans-serif; }
-.expand-btn:hover { background: rgba(255,255,255,0.06); color: #fff; border-color: rgba(255,255,255,0.3); }
-.chevron { display: inline-block; transition: transform 0.22s; }
-.expand-btn.open .chevron { transform: rotate(180deg); }
-.expandable { max-height: 0; overflow: hidden; transition: max-height 0.32s ease; }
-.expandable.open { max-height: 500px; }
-.expand-inner { padding-top: 10px; font-size: 0.8rem; line-height: 1.7; opacity: 0.7; }
-
-.broadcaster { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: 8px; padding: 10px 14px; margin-top: 4px; }
-.bc-name { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--gold-light); font-size: 0.92rem; margin-bottom: 3px; }
-.bc-note { font-size: 0.77rem; opacity: 0.58; line-height: 1.5; }
-
-.studios { list-style: none; margin-top: 2px; }
-.studios li { display: flex; gap: 9px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; }
-.studios li:last-child { border: none; }
-.s-dot { width:7px; height:7px; border-radius:50%; background: var(--gold); margin-top: 5px; flex-shrink:0; }
-.s-name { font-weight: 500; line-height: 1.3; }
-.s-note { font-size: 0.73rem; opacity: 0.5; font-style: italic; }
-
-.data-note { padding: 14px 24px; font-size: 0.67rem; opacity: 0.3; font-style: italic; line-height: 1.5; }
-
-@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-.cp-head,.stats-grid,.cp-section { animation: fadeUp 0.28s ease both; }
-.stats-grid{animation-delay:.04s} .cp-section:nth-child(3){animation-delay:.08s} .cp-section:nth-child(4){animation-delay:.12s} .cp-section:nth-child(5){animation-delay:.16s} .cp-section:nth-child(6){animation-delay:.20s}
-
-#loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#b8d4e8; z-index:10; font-family:'Syne',sans-serif; font-size:1rem; color:rgba(26,18,6,0.5); gap:10px; }
-.spin { animation: spin 1s linear infinite; display:inline-block; font-size:1.5rem; }
-@keyframes spin { to{transform:rotate(360deg)} }
+.disclaimer{padding:12px 24px 24px;font-size:.65rem;opacity:.26;font-style:italic;line-height:1.5;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
 
 <div id="cursor">
-  <svg viewBox="0 0 42 48" xmlns="http://www.w3.org/2000/svg">
-    <rect x="8" y="22" width="26" height="20" rx="1.5" fill="#1a1206"/>
-    <polygon points="5,23 21,9 37,23" fill="#e8a020"/>
-    <rect x="17" y="32" width="8" height="10" rx="1" fill="#f5c84a"/>
-    <rect x="11" y="25" width="6" height="5" rx="0.8" fill="#2a8a7e"/>
-    <rect x="25" y="25" width="6" height="5" rx="0.8" fill="#2a8a7e"/>
-    <circle cx="21" cy="29" r="2.8" fill="none" stroke="rgba(245,240,232,0.7)" stroke-width="1.2"/>
-    <circle cx="21" cy="29" r="0.9" fill="rgba(245,240,232,0.7)"/>
-    <circle cx="4" cy="8" r="1.2" fill="#f5c84a" opacity="0.9"/>
-    <circle cx="38" cy="6" r="1" fill="#f5c84a" opacity="0.8"/>
-    <circle cx="35" cy="14" r="0.7" fill="#f5c84a" opacity="0.7"/>
+  <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <rect x="9" y="18" width="22" height="18" rx="1.5" fill="#12100e" stroke="#f4efe6" stroke-width="1.2"/>
+    <polygon points="7,19 20,7 33,19" fill="#e09a18" stroke="#12100e" stroke-width="1"/>
+    <rect x="16" y="28" width="8" height="8" rx="1" fill="#f5c84a"/>
+    <rect x="11" y="21" width="5" height="4" rx="0.7" fill="#1f7a6e"/>
+    <rect x="24" y="21" width="5" height="4" rx="0.7" fill="#1f7a6e"/>
+    <circle cx="20" cy="24" r="2.2" fill="none" stroke="#f4efe6" stroke-width="0.9"/>
+    <circle cx="20" cy="24" r="0.8" fill="#f4efe6"/>
   </svg>
 </div>
 
-<div id="tooltip"></div>
-
 <header>
   <div class="logo">
-    <div class="logo-reel"></div>
+    <div class="logo-strip">
+      <div class="ls-hole"></div><div class="ls-hole"></div><div class="ls-hole"></div>
+    </div>
     <div>
-      <h1>Funds<span></span></h1>
-      <div class="logo-sub">Animation Incentives · Europe</div>
+      <h1>Frames <em>&</em> Funds</h1>
+      <div class="logo-sub">Animation Incentives — Europe</div>
     </div>
   </div>
-  <div class="header-hint">Hover a country to preview · Click to explore incentives</div>
+  <div class="header-hint">🎬 Click any country to explore animation incentives</div>
 </header>
 
 <div id="app">
   <div id="map-wrap">
-    <div id="loading"><span class="spin">🎬</span>&nbsp;Loading map…</div>
+    <div id="loading"><span class="spin">🎬</span><span>Loading map…</span></div>
+    <svg id="map-svg"></svg>
+    <div id="map-tooltip"></div>
+    <div id="hint-bubble">🏢 Tap a country to explore incentives</div>
+    <div id="attribution">Map data: Natural Earth / TopoJSON · CC BY-SA</div>
   </div>
-
   <div id="sidebar">
-    <div id="idle-panel">
+    <div class="sheet-handle-bar" id="sheet-handle">
+      <div class="handle-pill"></div>
+      <span class="handle-text" id="handle-text">Tap a country to explore</span>
+    </div>
+    <div id="idle">
       <div class="idle-anim">🎬</div>
       <h2>Where will you make your next animated masterpiece?</h2>
-      <p>Hover any country to see its tax rate. Click to explore the full incentive breakdown — soft money, broadcasters and key studios.</p>
+      <p>Click any highlighted country to explore tax breaks, soft money, broadcasters &amp; top studios.</p>
       <div class="idle-chips">
-        <span class="chip">🇬🇧 UK — 25%</span>
-        <span class="chip">🇫🇷 France — 30%</span>
-        <span class="chip">🇮🇪 Ireland — 32%</span>
-        <span class="chip">🇩🇪 Germany — 25%</span>
-        <span class="chip">🇪🇸 Spain — 30–45%</span>
-        <span class="chip">🇮🇹 Italy — 40%</span>
-        <span class="chip">🇧🇪 Belgium — 30%</span>
-        <span class="chip">🇵🇱 Poland — 30%</span>
+        <span class="chip">🇬🇧 UK · 25%</span>
+        <span class="chip">🇫🇷 France · 30%</span>
+        <span class="chip">🇮🇪 Ireland · 32%</span>
+        <span class="chip">🇩🇪 Germany · 25%</span>
+        <span class="chip">🇪🇸 Spain · 30–45%</span>
+        <span class="chip">🇮🇹 Italy · 40%</span>
+        <span class="chip">🇧🇪 Belgium · 30%</span>
+        <span class="chip">🇵🇱 Poland · 30%</span>
+        <span class="chip">🇱🇺 Luxembourg · 30–40%</span>
+        <span class="chip">+ more</span>
       </div>
     </div>
-    <div id="country-panel"></div>
+    <div id="panel"></div>
   </div>
 </div>
 
 <script>
-// ── CURSOR ─────────────────────────────────────────────────
-const cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', e => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top = e.clientY + 'px';
-});
+const isTouch = window.matchMedia('(hover: none)').matches;
+const isMobile = () => window.innerWidth < 700;
 
-// ── DATA ───────────────────────────────────────────────────
+// Cursor
+if (!isTouch) {
+  const cur = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => { cur.style.left = e.clientX+'px'; cur.style.top = e.clientY+'px'; });
+}
+
 const DATA = {
-  GBR:{name:'United Kingdom',flag:'🇬🇧',tagline:"Home of Aardman, Peppa Pig & a world-class animation ecosystem",taxRelief:'25%',taxName:'Animation Tax Relief (ATR)',spendThreshold:'51% of core expenditure in the UK',quickNote:'Available on budgets of any size. UK qualifying production test applies. Relief calculated on qualifying UK core expenditure only.',softDetail:'The BFI supports ambitious projects with prestige crossover potential. Regional agencies — Screen Scotland, Northern Ireland Screen, Creative England, Wales Screen — offer additional development and production funding alongside the ATR, often with local spend requirements. Well-structured packages combining ATR + regional soft money can reach 35–42% in the most favourable cases.',softMoney:'BFI Film Fund, Creative England, Screen Scotland, Wales Screen, Northern Ireland Screen',broadcaster:'BBC / BBC iPlayer',broadcasterNote:"The BBC is the dominant commissioner of children's and adult animation. CBBC, CBeebies and BBC Two are key slots. Channel 4 is increasingly commissioning animation for adults and young people.",studios:[{name:'Aardman Animations',note:'Bristol — Wallace & Gromit, Shaun the Sheep, global service work'},{name:'Blue Zoo Animation',note:'London — BAFTA-winning studio, strong co-pro and service arm'},{name:'Lupus Films',note:'London — Ethel & Ernest, Snowman legacy, literary adaptations'}]},
-  FRA:{name:'France',flag:'🇫🇷',tagline:"Europe's animation powerhouse with the richest incentive ecosystem",taxRelief:'30%',taxName:'TRIP (Tax Rebate for International Productions)',spendThreshold:'50% of production spend in France',quickNote:"TRIP is the international-facing tool. French domestic productions access the Crédit d'Impôt Cinéma/Audiovisuel. Both offer 30% on qualifying French spend.",softDetail:"The CNC (Centre National du Cinéma) is the cornerstone of French animation financing — offering selective aid, automatic support and the Cosip fund for TV series. France TV participates actively. Regional funds in Bretagne, Normandie and Auvergne-Rhône-Alpes require territorial spend but offer meaningful additional support. French TV quota obligations (Chronologie des Médias) drive active commissioning across all major broadcasters.",softMoney:'CNC, Bretagne Images, Normandie Images, Auvergne-Rhône-Alpes Cinéma, Pictanovo',broadcaster:'France Télévisions / Canal+ / TF1',broadcasterNote:"France 5 and France 3 are consistent animation commissioners. Canal+ and OCS are growing in adult animation. TF1 targets mass-market family content. Quota obligations require all broadcasters to invest in French-language production.",studios:[{name:'Xilam Animation',note:'Paris — Oggy and the Cockroaches, Mr. Magoo, worldwide distribution'},{name:'Gaumont Animation',note:"Paris — Miraculous Ladybug, one of Europe's largest animation groups"},{name:'Folimage',note:'Valence — prestige features and shorts, festival favourite'}]},
-  IRL:{name:'Ireland',flag:'🇮🇪',tagline:"Punching far above its weight — the animation island",taxRelief:'32%',taxName:'Section 481 Film & TV Tax Credit',spendThreshold:'70% of total production spend in Ireland',quickNote:"One of Europe's most generous animation tax credits. Minimum budget threshold of €125,000. A cornerstone incentive for European co-productions.",softDetail:"Screen Ireland (Fís Éireann) is an extremely animation-friendly fund — Ireland produces more animation per capita than almost anywhere in the world. BAI Sound & Vision funds Irish-language content. Ireland has bilateral co-production treaties with France, Germany, Canada, Australia and others, enabling stacked funding packages. Animation from Ireland also accesses Creative Europe support.",softMoney:'Screen Ireland (Fís Éireann), BAI Sound & Vision, Creative Europe MEDIA',broadcaster:'RTÉ / TG4',broadcasterNote:"RTÉ commissions children's animation consistently. TG4 (Irish language channel) champions indigenous animated content with strong relationships with Galway and Kerry studios. Both participate in European Broadcasting Union co-productions.",studios:[{name:'Cartoon Saloon',note:'Kilkenny — Oscar-nominated: Song of the Sea, Wolfwalkers, Puffin Rock'},{name:'Brown Bag Films',note:'Dublin — Doc McStuffins (Disney Junior), major service studio'},{name:'Giant Animation',note:'Dublin — Dino Ranch (Netflix), growing originals slate'}]},
-  DEU:{name:'Germany',flag:'🇩🇪',tagline:"Federal structure = layered funding opportunities across 16 Länder",taxRelief:'25%',taxName:'DFFF II (Anreizförderung)',spendThreshold:'25% of total budget spent in Germany',quickNote:'DFFF II is the key international incentive — up to €25M per project. Low 25% spend threshold makes it flexible for co-productions. DFFF I offers up to €10M selective funding.',softDetail:"Germany's federal structure means each of the 16 Länder has its own film fund with regional spend requirements. NRW (Cologne/Düsseldorf), Bavaria (Munich) and Hamburg-Schleswig-Holstein are the major animation hubs. Stacking federal DFFF + FFA + regional Länder money is standard practice and can significantly increase the overall package.",softMoney:'FFA (Filmförderungsanstalt), BKM, MDM, FFF Bayern, MFG Baden-Württemberg, Film- und Medienstiftung NRW',broadcaster:'ARD / ZDF / KiKA',broadcasterNote:"KiKA (jointly operated by ARD and ZDF) is the primary children's broadcaster and active animation commissioner. ZDF has a long history of co-producing prestige animation. NDR and WDR within the ARD group also commission independently.",studios:[{name:'Studio 100 Animation',note:'Munich — Maya the Bee, Vic the Viking, international co-pro powerhouse'},{name:'Trickstudio Lutterbeck',note:"Cologne — children's series, strong WDR relationship"},{name:'m4e / Telescreen',note:'Munich — Mia and Me, global franchise animation'}]},
-  ESP:{name:'Spain',flag:'🇪🇸',tagline:"Growing fast — Canary Islands offer Europe's highest regional rate",taxRelief:'30–45%',taxName:'Deducción Art. 36.1 LIS + Regional Incentives',spendThreshold:'50% of production costs incurred in Spain',quickNote:'Canary Islands offer up to 50% — the most generous in Spain. Andalusia, Valencia and Madrid each have additional regional support. The Canaries incentive is increasingly used for major international service work.',softDetail:"ICAA (Instituto de la Cinematografía y de las Artes Audiovisuales) provides selective and automatic aid. RTVE has a legal obligation to invest a percentage of revenues into Spanish production. Andalusia has a growing animation cluster in Málaga and Seville. The Canary Islands' aggressive incentive is attracting major international productions previously heading to other European territories.",softMoney:'ICAA, RTVE co-investment obligation, ICIC Andalusia, Canary Islands Film Commission',broadcaster:'RTVE / Clan TV / Movistar+',broadcasterNote:"Clan TV (RTVE's children's channel) is the main animation commissioner. Netflix Spain has invested in original Spanish animation. Movistar+ and Prime Video Spain are growing buyers of prestige content.",studios:[{name:'BRB Internacional',note:'Madrid — Dogtanian, Gormiti, long history of international co-pros'},{name:'Imira Entertainment',note:'Barcelona — Canimals, strong distribution network'},{name:'Potenza Producciones',note:'Seville — growing Andalusian studio, originals and service work'}]},
-  BEL:{name:'Belgium',flag:'🇧🇪',tagline:"Tintin's homeland — strong tradition, bilingual funding landscape",taxRelief:'30%',taxName:'Tax Shelter (abri fiscal)',spendThreshold:'70% as qualifying Belgian expenditure',quickNote:'Minimum budget of €250,000. Requires a recognised Belgian production company as co-producer. Highly attractive for French and Dutch co-productions.',softDetail:"Belgium's bilingual system means two parallel funding bodies — VAF/Filmfonds for Flemish and CCA/AVIQ for Wallonia. Both offer selective and automatic animation funding. Brussels is a hub for European institutions with a strong animation scene. Stacking Tax Shelter + VAF/CCA + broadcaster investment is the standard financing model.",softMoney:'VAF/Filmfonds (Flanders), CCA (Wallonia), RTBF, VRT',broadcaster:'RTBF (French) / VRT (Flemish)',broadcasterNote:'VRT and RTBF are both active commissioners with quota obligations supporting local animation. Ketnet (VRT\'s children\'s brand) is a significant animation platform.',studios:[{name:'nWave Pictures',note:'Brussels — CG feature films, global theatrical distribution'},{name:'Walking the Dog',note:'Ghent — Blinky Bill, premium quality animated features'},{name:'Lunanime',note:'Ghent — The Smurfs and the Magic Flute, heritage and new IP'}]},
-  NLD:{name:'Netherlands',flag:'🇳🇱',tagline:"Miffy's homeland — compact, creative, internationally connected",taxRelief:'30%',taxName:'Netherlands Production Incentive (NPI)',spendThreshold:'60% of total budget as qualifying Dutch expenditure',quickNote:'NPI reformed and expanded in recent years. Animation productions qualify. Minimum Dutch spend of €250,000. Maximum incentive €4M per project.',softDetail:"The Netherlands Film Fund supports animation across development, production and distribution. CoBO (managed jointly by the Film Fund and NPO) specifically funds TV productions involving Dutch public broadcasters. The Netherlands' central position in Europe makes it a natural co-production hub. Creative Industries fund also offers animation development grants.",softMoney:'Nederlands Filmfonds, CoBO, NPO (public broadcasting), Eye Filmmuseum',broadcaster:'NPO / Zapp / KRO-NCRV',broadcasterNote:"NPO's Zapp (children's channel) is the primary animation destination. Dutch broadcasters must invest a percentage of revenues in European content. The Netherlands' multilingual culture makes productions accessible across Benelux.",studios:[{name:'Il Luster',note:'Utrecht — award-winning short films, consistent festival circuit presence'},{name:'Submarine',note:'Amsterdam — co-productions, international sales, A-list festival films'},{name:'Anikey Studios',note:"Amsterdam — children's series and service animation"}]},
-  ITA:{name:'Italy',flag:'🇮🇹',tagline:"La Dolce Animazione — ancient art, very generous modern tax breaks",taxRelief:'40%',taxName:'Tax Credit Produttori (art. 15 DL Cinema)',spendThreshold:'80% of total budget spent in Italy for Italian productions',quickNote:"Italy's 40% credit is among the most generous in Europe. Foreign production incentive also available at 40%. Rome and Milan are the main studio hubs.",softDetail:"Italy reformed its cinema law in 2016. DG Cinema e Audiovisivo (Ministry of Culture) manages national funding. Regional funds in Apulia, Tuscany and the autonomous province of South Tyrol (IDM) are very active. Rai has broadcaster investment obligations and a strong children's animation commissioning strand.",softMoney:'DG Cinema e Audiovisivo (MiC), IDM Südtirol, Apulia Film Commission, Toscana Film Commission',broadcaster:'Rai / Rai Yoyo / Mediaset',broadcasterNote:"Rai Yoyo (children's channel) is a key animation commissioner with a long tradition of co-producing European animation. Mediaset's Boing channel airs broad animation. Netflix Italy has invested in Italian originals.",studios:[{name:'Rainbow S.p.A.',note:'Loreto — Winx Club, 44 Cats, one of Europe\'s largest animation studios'},{name:'Gruppo Alcuni',note:'Treviso — Geronimo Stilton, Grisù, long international co-pro history'},{name:'Enanimation',note:'Rome — Pinocchio (Netflix), prestige feature animation'}]},
-  POL:{name:'Poland',flag:'🇵🇱',tagline:"Eastern Europe's rising hub — great skills, competitive costs",taxRelief:'30%',taxName:'Polish Film Institute (PISF) Incentive',spendThreshold:'80% of production costs incurred in Poland',quickNote:'Competitive incentive with budget caps. Strong service work tradition at lower cost than Western Europe — the 30% goes further here than in France or Germany.',softDetail:'PISF offers both selective (project-based) and automatic (market performance) support for animation. TVP has a commissioning strand for children\'s animation. Warsaw and Łódź are the main animation hubs. Poland\'s substantially lower production costs versus Western Europe mean the effective value of the incentive is amplified.',softMoney:'PISF (Polish Film Institute), KRRiT broadcast support, Polish Television (TVP)',broadcaster:'TVP / Canal+ Polska',broadcasterNote:"TVP ABC is the main children's destination and a broadcaster-investor in Polish animation. Canal+ Polska is a growing co-producer of prestige animated content.",studios:[{name:'Platige Image',note:'Warsaw — The Witcher short, Fallen Art Oscar nominee, premium VFX & animation'},{name:'Se-ma-for',note:'Łódź — legendary stop-motion studio, Peter and the Wolf'},{name:'Animoon',note:'Warsaw — service and original animation, growing international slate'}]},
-  SWE:{name:'Sweden',flag:'🇸🇪',tagline:"Nordic cool, Astrid Lindgren's home — quality over quantity",taxRelief:'25%',taxName:'Swedish Film Institute (SFI) Production Incentive',spendThreshold:'80% of budget as qualifying Swedish expenditure',quickNote:'SFI incentive targets larger productions. Creative Europe co-development support frequently used in combination. SFI also offers selective grants independent of the incentive.',softDetail:"The Nordisk Film & TV Fond is a pan-Nordic funding body (Sweden, Denmark, Norway, Finland, Iceland) offering co-production support — a unique advantage. SVT has strong obligations to invest in Swedish content. Göteborg Film Fund is an active regional option.",softMoney:'Swedish Film Institute (SFI), SVT broadcast investment, Nordisk Film & TV Fond, Göteborg Film Fund',broadcaster:'SVT / TV4',broadcasterNote:"SVT Barnkanalen (children's channel) is the key animation commissioner. Sweden's shared language across Scandinavia expands the addressable market significantly.",studios:[{name:'Bur Animation',note:'Stockholm — prestige short films, consistent festival circuit'},{name:'Anagram',note:'Malmö — documentary animation crossover, distinctive aesthetic'},{name:'Cinenic Film',note:"Stockholm — children's TV animation and co-productions"}]},
-  NOR:{name:'Norway',flag:'🇳🇴',tagline:"Oil-funded creativity — generous public support, Nordic co-pro bonus",taxRelief:'25%',taxName:'Norwegian Film Institute (NFI) Production Incentive',spendThreshold:'80% of budget as qualifying Norwegian expenditure',quickNote:'Minimum budget of NOK 2M. The NFI also offers substantial selective development and production grants. Nordisk Film & TV Fond adds significant pan-Nordic co-production value.',softDetail:"Norway's sovereign wealth fund-backed cultural policy means relatively generous arts funding with long-term stability. The NFI covers the full pipeline from development to distribution. Nordisk Film & TV Fond (shared with Sweden, Denmark, Finland, Iceland) is a bonus for pan-Nordic co-productions. NRK has strong broadcaster obligations.",softMoney:'Norwegian Film Institute (NFI), NRK broadcast investment, Nordisk Film & TV Fond',broadcaster:'NRK / TV 2',broadcasterNote:"NRK Super (children's brand) is the primary animation commissioner. NRK has strong obligations to invest in Norwegian content. Norway's high broadband penetration makes streaming-first strategies very viable.",studios:[{name:'Qvisten Animation',note:'Oslo — Gaup, service work, growing originals slate'},{name:'Storyline Studios',note:"Oslo — Nelly Rapp, children's features and series"},{name:'Animaskin',note:'Tromsø — Arctic-themed originals and short films'}]},
-  DNK:{name:'Denmark',flag:'🇩🇰',tagline:"Small country, outsized animation ambition",taxRelief:'22%',taxName:'Danish Film Institute (DFI) Production Support',spendThreshold:'80% of qualifying production costs in Denmark',quickNote:'DFI selective grants can significantly bridge the gap above the 22% incentive rate. Nordisk Film & TV Fond adds pan-Nordic co-production value. DR is a highly active co-investor.',softDetail:"DFI offers automatic (market performance-linked) and selective support. DR has a significant commissioning budget and actively invests in Danish animation for both children and adults. Denmark's position in Scandinavia means productions benefit from shared-language market access across the Nordic region.",softMoney:'Danish Film Institute (DFI), DR broadcaster investment, Nordisk Film & TV Fond',broadcaster:'DR / TV 2 Denmark',broadcasterNote:"DR Ramasjang (children's channel) is the key animation commissioner and has produced acclaimed adult animation. TV 2 targets broader family audiences.",studios:[{name:'A. Film',note:'Copenhagen — The Danish Poet (Oscar winner), long feature history'},{name:'Snowglobe',note:'Copenhagen — premium series, international co-productions'},{name:'Filmgraf',note:"Copenhagen — children's animation, DR regular partner"}]},
-  PRT:{name:'Portugal',flag:'🇵🇹',tagline:"A hidden gem — improving incentives, low costs, Lusophone market bonus",taxRelief:'25%',taxName:'ICA Production Incentive + FICA Grants',spendThreshold:'50% of total budget as qualifying Portuguese expenditure',quickNote:'International Co-production Incentive at 25%. FICA (Fund for Cinema and Audiovisual) offers grants on top. Lower cost base than Spain or France.',softDetail:"Portugal has been steadily increasing its animation competitiveness. Lisbon has a growing animation scene. RTP has broadcaster obligations. Portugal's Lusophone connections to Brazil and Portuguese-speaking Africa are a unique strategic bonus — a single production can address 260M+ Portuguese speakers worldwide.",softMoney:'ICA (Instituto do Cinema e do Audiovisual), RTP broadcaster investment, Câmara Municipal de Lisboa',broadcaster:'RTP / SIC / TVI',broadcasterNote:"RTP (public broadcaster) commissions children's animation. Access to the Brazilian market through shared language is a major strategic advantage for co-production development and international sales.",studios:[{name:'Sardinha em Lata',note:'Lisbon — festival circuit short films, growing international reputation'},{name:'Animanostra',note:"Porto — award-winning shorts and children's content"},{name:'Blink Industries',note:'Lisbon — international service arm, UK and European co-pros'}]},
-  LUX:{name:'Luxembourg',flag:'🇱🇺',tagline:"Europe's smallest big player — punchy incentives, flexible spend threshold",taxRelief:'30–40%',taxName:'Film Fund Luxembourg Production Incentive',spendThreshold:'Just 25% qualifying Luxembourg expenditure',quickNote:'One of the most flexible spending thresholds in Europe at just 25%. Particularly attractive for international co-productions needing a light European footprint.',softDetail:"Luxembourg's Film Fund is well-resourced relative to its territory size. It is a favourite co-production partner for French, German and Belgian studios. VAT recovery routes add additional financial value. RTL Group, headquartered in Luxembourg, is one of Europe's largest commercial broadcasters.",softMoney:'Film Fund Luxembourg, ARTES, RTL Group investment',broadcaster:'RTL Luxembourg / Arte',broadcasterNote:'RTL Luxembourg broadcasts to Luxembourg, Belgium and parts of France and Germany. Arte (Franco-German cultural channel) is a major commissioner of prestige animation.',studios:[{name:'Mélusine Productions',note:'Luxembourg City — The Big Bad Fox, prestige animation co-pros'},{name:'Bidibul Productions',note:'Luxembourg City — European co-production specialist'},{name:'Samsa Film',note:'Luxembourg City — feature films and international co-productions'}]},
-  AUT:{name:'Austria',flag:'🇦🇹',tagline:"Central European crossroads — gateway to DACH and Eastern Europe",taxRelief:'25%',taxName:'FISA (Filmstandort Austria) Cash Rebate',spendThreshold:'75% of total production budget in Austria',quickNote:'FISA launched 2020 — 25% cash rebate on qualifying Austrian spend. ÖFI (Austrian Film Institute) provides selective grants on top of FISA.',softDetail:"Austria benefits from the same German-language market as Germany and Switzerland (DACH). The ORF Film/Fernsehabkommen is an annual agreement between ORF and the Austrian film industry, investing a fixed sum in domestic production. Vienna Film Fund (WFF) and Filmfonds Wien offer additional Vienna-based support.",softMoney:'ÖFI (Austrian Film Institute), FISA, Vienna Film Fund (WFF), Filmfonds Wien',broadcaster:'ORF / ATV / Flimmit',broadcasterNote:"ORF is the primary broadcaster and investor in Austrian animation. Flimmit (ORF's streaming platform) is growing. Austrian animation often targets the wider DACH German-speaking market.",studios:[{name:'Arx Anima',note:'Vienna — service animation for international clients, quality CG work'},{name:'Ulysses Filmproduktion',note:'Vienna — documentary and animated documentary crossover'},{name:'Dor Film',note:'Vienna — features and television, DACH market focus'}]},
-  CZE:{name:'Czech Republic',flag:'🇨🇿',tagline:"Trnka & Švankmajer's home — legendary tradition, modern ambition",taxRelief:'20%',taxName:'Czech Film Fund (CFF) Incentive',spendThreshold:'80% of total budget as qualifying Czech expenditure',quickNote:'Up to CZK 100M per project. Prague is a well-established service production city. Barrandov Studios is one of Europe\'s largest studio complexes.',softDetail:"The Czech Republic has a world-famous animation tradition going back to Jiří Trnka, Hermína Týrlová and Jan Švankmajer. Czech Television (ČT) has an active children's animation commissioning strand. Prague's talent base and lower costs attract service work from across Western Europe.",softMoney:'Czech Film Fund (CFF), State Culture Fund, Czech Television (ČT)',broadcaster:'ČT (Czech Television) / Prima / Nova',broadcasterNote:"Czech Television's ČT :D children's channel is the primary animation commissioner. Czech animation has a strong international festival reputation that opens co-production opportunities across Europe.",studios:[{name:'Bionaut Films',note:'Prague — award-winning shorts, growing animated feature slate'},{name:'Bratři v triku',note:'Prague — legendary studio founded 1945, original home of Czech animation'},{name:'Alkay Animation Prague',note:'Prague — CG service work and original productions'}]},
-  HUN:{name:'Hungary',flag:'🇭🇺',tagline:"Central Europe's secret weapon — high skills, very competitive costs",taxRelief:'30%',taxName:'National Film Institute Hungary (NFI) Production Support',spendThreshold:'80% of total budget incurred in Hungary',quickNote:'NFI is well-funded and proactive. Budapest is a growing hub for international service animation with highly skilled talent.',softDetail:"Hungary has one of the best value-for-money propositions in European animation. NFI selective funding is available for qualifying Hungarian productions. Costs are substantially lower than Western Europe. Budapest's proximity to Vienna and its bilingual talent pool makes it attractive for DACH-market co-productions.",softMoney:'National Film Institute Hungary (NFI), MTVA (public broadcaster), Budapest Film Office',broadcaster:'MTVA (M1/M2) / RTL Klub / TV2',broadcasterNote:"MTVA (Hungarian public broadcaster) commissions children's animation. RTL Klub is the leading commercial broadcaster. Hungary's EU membership gives access to all Creative Europe co-production programmes.",studios:[{name:'Kedd Animation',note:'Budapest — award-winning shorts, consistent festival circuit favourite'},{name:'Umbrella Entertainment',note:'Budapest — CG service work, growing international client base'},{name:'Puppet Films Budapest',note:'Budapest — stop-motion tradition, festival presence'}]},
-  FIN:{name:'Finland',flag:'🇫🇮',tagline:"Nordic serenity, Moomin heritage, deep public broadcasting support",taxRelief:'25%',taxName:'Finnish Film Foundation (SES) Incentive',spendThreshold:'80% of qualifying Finnish expenditure',quickNote:'SES offers selective development and production grants alongside the incentive. Nordisk Fund participation adds value for pan-Nordic projects.',softDetail:"Finland has a globally recognised animated storytelling tradition (Moomins, Angry Birds via Rovio). Yle has consistent commissioning budgets. The Nordisk Fund provides resources for Nordic co-productions. Finnish studios operate at lower costs than Sweden while meeting Nordic quality expectations.",softMoney:'Finnish Film Foundation (SES), Yle broadcaster investment, Nordisk Film & TV Fond',broadcaster:'Yle / MTV Finland',broadcasterNote:"Yle (Finnish public broadcaster) is the primary animation commissioner. Yle Areena's streaming growth is creating new animation windows. Rovio's global success has raised Finland's profile in international animation finance.",studios:[{name:'Gigglebug Entertainment',note:"Helsinki — Lily's Driftwood Bay, My Friend Robbie, strong international distribution"},{name:'Rovio Animation',note:'Helsinki — Angry Birds franchise, global gaming-animation crossover'},{name:'Anima Vitae',note:'Helsinki — feature animation, service work, growing slate'}]},
-  ROM:{name:'Romania',flag:'🇷🇴',tagline:"Fast-growing — Europe's most affordable quality service hub",taxRelief:'30%',taxName:'National Cinema Center Romania (CNC) Cash Rebate',spendThreshold:'70% of total budget as qualifying Romanian expenditure',quickNote:"Romania's 30% rebate launched 2019, triggering a significant uptick in international service work. Bucharest and Cluj-Napoca are the main hubs.",softDetail:"CNC Romania offers selective grants for domestic animation alongside the cash rebate. TVR commissions a modest slate of domestic animation. The cost base is 30–40% lower than Western Europe — combined with the 30% rebate this makes Romania extremely competitive for service contracts and increasingly for co-productions.",softMoney:'CNC Romania (National Cinema Center), TVR (public broadcaster), Transylvania International Film Fund',broadcaster:'TVR (Public) / Pro TV / Antena 1',broadcasterNote:"TVR (Romanian public television) has a children's animation strand. Pro TV, as part of the CME group, is the leading commercial broadcaster and occasionally co-invests in premium content.",studios:[{name:'Saga Film',note:'Bucharest — feature animation, international service work'},{name:'MediaPro Studios',note:'Bucharest — full-service studio with growing animation capability'},{name:'Tangent Animation Romania',note:'Bucharest — service animation, expanding CG pipeline'}]},
+  gb:{name:'United Kingdom',flag:'🇬🇧',tagline:"Home of Aardman, Peppa Pig & a world-class animation ecosystem",color:'#b03560',taxRelief:'25%',taxName:'Animation Tax Relief (ATR)',spend:'51% of core expenditure must be UK spend',quickNote:'Available on any budget size. UK qualifying production test applies. Claimed against UK corporation tax by the production company.',detail:'The BFI supports ambitious projects with prestige crossover potential. Regional agencies — Screen Scotland, Northern Ireland Screen, Wales Screen, Creative England — offer development and production funding on top of ATR, often with local spend conditions. In favourable cases, stacked UK + regional soft money packages can reach 35–42% of budget.',softMoney:'BFI Film Fund, Creative England, Screen Scotland, Wales Screen, Northern Ireland Screen, Young Audiences Content Fund',broadcaster:'BBC / BBC iPlayer',broadcasterNote:"The BBC is the dominant commissioner of children's and adult animation. CBBC, CBeebies, and BBC Two are key slots. Channel 4 is increasingly commissioning animation for adults. ITVX and Sky are growing buyers for family content.",studios:[{n:'Aardman Animations',d:'Bristol — Wallace & Gromit, Shaun the Sheep; global service arm'},{n:'Blue Zoo Animation',d:'London — BAFTA-winning; strong co-pro and service track record'},{n:'Lupus Films',d:'London — Ethel & Ernest, The Snowman legacy; literary adaptations'}]},
+  fr:{name:'France',flag:'🇫🇷',tagline:"Europe's animation powerhouse — richest incentive ecosystem on the continent",color:'#1e4f8f',taxRelief:'30%',taxName:'TRIP (Tax Rebate for International Productions)',spend:'50% of production spend must be in France',quickNote:"TRIP is the key tool for international co-producers. French domestic productions access the crédit d'impôt cinéma/audiovisuel. France also has the CNC's COSIP fund for TV series.",detail:"The CNC is the cornerstone of French animation financing, offering selective aid, automatic support, and COSIP for TV series. France Télévisions participates actively. Regional funds — Bretagne, Normandie, Auvergne-Rhône-Alpes — require local spend. French TV quota obligations drive broadcaster commissioning. Stacking TRIP + CNC + regional fund is standard practice.",softMoney:'CNC, Bretagne, Normandie Images, Auvergne-Rhône-Alpes Cinéma, Pictanovo (Hauts-de-France)',broadcaster:'France Télévisions / TF1 / Canal+',broadcasterNote:"France 5 and France 3 are consistent animation commissioners. Canal+ and OCS are growing in adult animation. TF1 targets mass-market family animation. Broadcasting quotas require TV channels to invest in French-language production.",studios:[{n:'Xilam Animation',d:'Paris — Oggy and the Cockroaches, Mr. Magoo; worldwide distribution powerhouse'},{n:'Gaumont Animation',d:'Paris — Miraculous Ladybug; global franchise machine'},{n:'Folivari',d:'Paris — My Life as a Courgette producer; prestige feature animation'}]},
+  ie:{name:'Ireland',flag:'🇮🇪',tagline:"Punching far above its weight — the animation island of Europe",color:'#2e7a2e',taxRelief:'32%',taxName:'Section 481 Film & TV Tax Credit',spend:'70% of total production expenditure must be Irish spend',quickNote:"One of Europe's most generous animation tax credits. Minimum budget of €125,000. Claimed as a payable credit against Irish corporation tax.",detail:"Screen Ireland is one of the most animation-friendly funds in Europe — Ireland produces more animation per capita than almost anywhere in the world. BAI Sound & Vision funds Irish-language and public-interest content. Stacked Section 481 + Screen Ireland + broadcaster packages can exceed 50% of budget.",softMoney:'Screen Ireland (Fís Éireann), BAI Sound & Vision, Broadcasting Authority of Ireland, TG4 Coimisiún na Meán',broadcaster:'RTÉ / TG4',broadcasterNote:"RTÉ commissions children's animation consistently. TG4 (Irish language) champions indigenous animated content and has strong relationships with studios in Kilkenny, Galway and Kerry.",studios:[{n:'Cartoon Saloon',d:'Kilkenny — Oscar-nominated; Song of the Sea, Wolfwalkers, Puffin Rock'},{n:'Brown Bag Films',d:'Dublin & Manchester — Doc McStuffins (Disney Jr.); large-scale service arm'},{n:'Giant Animation',d:'Dublin — Dino Ranch; growing service and original content slate'}]},
+  de:{name:'Germany',flag:'🇩🇪',tagline:"Federal structure = layered funding opportunities across 16 Länder",color:'#c93528',taxRelief:'25%',taxName:'DFFF II (German Federal Film Fund — Anreizförderung)',spend:'25% of total project budget must be German spend (DFFF II)',quickNote:'DFFF II is the international-facing incentive, capped at €25M per project. DFFF I offers up to €10M in selective/reference funding. Minimum German spend of 25% required.',detail:"Germany's federal structure means each of the 16 Länder has its own film fund, most requiring regional spend. NRW (Cologne/Düsseldorf), Bavaria (Munich), and Hamburg-Schleswig-Holstein are the major animation hubs. Stacking DFFF + regional fund + broadcaster investment from ZDF or ARD is standard. Germany is uniquely positioned for DACH (German-speaking) market reach.",softMoney:'FFA, BKM, MDM (Mitteldeutsche Medienförderung), FFF Bayern, MFG Baden-Württemberg, Film- und Medienstiftung NRW, HamburgMedia',broadcaster:'ARD / ZDF / KiKA',broadcasterNote:"KiKA (jointly operated by ARD and ZDF) is the primary children's broadcaster and an active animation commissioner. ZDF has a long history of co-producing prestige animation. Both ARD and ZDF have legal obligations to invest in German content.",studios:[{n:'Studio 100 Animation',d:'Munich — Maya the Bee, Vic the Viking; international co-pro powerhouse'},{n:'Rothkirch Cartoon-Film',d:'Berlin — The Little Polar Bear; quality family film tradition'},{n:'m4e / Telescreen',d:'Munich — Heidi (3D), Mia and Me; franchise-building animation'}]},
+  es:{name:'Spain',flag:'🇪🇸',tagline:"Growing fast — Canary Islands offer Europe's highest regional incentive",color:'#e09a18',taxRelief:'30–45%',taxName:'Deducción por Inversiones en Producciones Audiovisuales (Art. 36.1 LIS)',spend:'50% of production costs must be incurred in Spain',quickNote:"Canary Islands offer up to 50% deduction — the most generous in Spain. Andalusia, Valencia, and Madrid each have additional regional support. The 30% baseline rises in qualifying regions.",detail:"ICAA (Instituto de la Cinematografía) provides selective and automatic aid. RTVE has a legal obligation to invest a percentage of revenues into Spanish production. The Canary Islands' aggressive 50% incentive is attracting significant international service work. Netflix Spain and Movistar+ have invested in original Spanish animation.",softMoney:'ICAA, RTVE investment obligation, ICEC (Andalusia/Catalonia), Institut Català de les Empreses Culturals (ICEC), Canal Sur',broadcaster:'RTVE / Clan TV / Mediaset España',broadcasterNote:"Clan TV (RTVE's children's channel) is the main animation commissioner. Netflix Spain has invested in original content. Movistar+ and Prime Video Spain are growing buyers. RTVE's mandatory investment in domestic content is a structural support.",studios:[{n:'BRB Internacional',d:'Madrid — Dogtanian, Gormiti; long history of international co-productions'},{n:'Imira Entertainment',d:'Barcelona — Canimals; service arm and global distribution'},{n:'Kandor Moon',d:'Granada — animated features; prestige quality production'}]},
+  be:{name:'Belgium',flag:'🇧🇪',tagline:"Tintin's homeland — strong tradition, bilingual funding landscape",color:'#1f7a6e',taxRelief:'30%',taxName:'Tax Shelter (abri fiscal / tax shelter)',spend:'70% of expenditure must qualify as Belgian production work',quickNote:"Belgium's Tax Shelter is available for qualifying animation. Minimum budget €250,000. Requires a recognised Belgian production company as co-producer. A favourite for French and Dutch co-productions.",detail:"Belgium's bilingual system means two parallel funding bodies: VAF/Filmfonds for Flemish productions and CCA/AVIQ for Wallonia. Both offer selective and automatic animation funding. Stacking Tax Shelter + VAF/CCA + broadcaster investment from VRT or RTBF is standard.",softMoney:"VAF/Filmfonds (Flanders), Centre du Cinéma et de l'Audiovisuel (CCA, Wallonia), RTBF broadcaster investment, VRT broadcaster investment, AVIQ",broadcaster:'VRT (Flemish) / RTBF (French)',broadcasterNote:"VRT's Ketnet (children's brand) and Canvas are active commissioners. RTBF's La Une and OUFtivi children's platform also commission animation. Both broadcasters have quota obligations supporting local animation production.",studios:[{n:'nWave Pictures',d:"Brussels — CG feature films; The Pirates Who Don't Do Anything"},{n:'Walking the Dog',d:'Ghent — premium quality animated features and series'},{n:'Lunanime',d:'Ghent — The Smurfs and the Magic Flute; heritage and new IP'}]},
+  nl:{name:'Netherlands',flag:'🇳🇱',tagline:"Miffy's homeland — compact but creative Dutch animation scene",color:'#5e3490',taxRelief:'30%',taxName:'Netherlands Production Incentive (NPI)',spend:'60% of total budget must be qualifying Dutch expenditure',quickNote:'The NPI was reformed and expanded in 2023. Animation qualifies. Minimum Dutch spend of €250,000. Maximum incentive of €4M per project per year.',detail:"The Netherlands Film Fund supports animation across development, production, and distribution. CoBO (managed jointly by the Film Fund and NPO) specifically funds TV productions involving Dutch public broadcasters. The Dutch Creative Industries Fund supports smaller-scale animation with development grants. Amsterdam and Utrecht are the main studio hubs.",softMoney:'Nederlands Filmfonds, CoBO (public broadcaster development fund), NPO (broadcaster investment), Stimuleringsfonds Creatieve Industrie',broadcaster:'NPO / KRO-NCRV / AVROTROS',broadcasterNote:"NPO's Zapp (children's channel) is the primary animation destination. Dutch broadcasters have European content investment obligations. Co-production with Belgian and German broadcasters is common, leveraging shared language advantages.",studios:[{n:'Il Luster',d:'Utrecht — award-winning short films; consistent festival circuit presence'},{n:'Submarine',d:'Amsterdam — international co-productions; sales and distribution'},{n:'Polder Animation',d:"Amsterdam — children's series; growing original slate"}]},
+  it:{name:'Italy',flag:'🇮🇹',tagline:"La Dolce Animazione — ancient art traditions meet modern tax breaks",color:'#c25518',taxRelief:'40%',taxName:'Tax Credit Produttori (Art. 15 DL Cinema 2016)',spend:'80% of total budget must be spent in Italy (Italian productions)',quickNote:"Italy reformed its cinema law in 2016. The Foreign Production Incentive (FPIT) offers 40% on qualifying Italian spend for international co-producers. Rome and Milan are the main hubs.",detail:"Italy's national cinema fund (MiC) offers selective and automatic grants. Regional funds in Apulia (Apulia Film Commission), Tuscany, and South Tyrol (IDM) are active. Rai has broadcaster investment obligations and a dedicated children's animation strand. Netflix Italy has invested in Italian originals. The 40% rate is among the highest in Europe.",softMoney:'DG Cinema e Audiovisivo (MiC), IDM Südtirol / Alto Adige, Apulia Film Commission, Rai broadcaster investment, Fondazione Cinema per Roma',broadcaster:'Rai / Rai Yoyo / Mediaset / Boing',broadcasterNote:"Rai Yoyo (Rai's children's channel) is the key animation commissioner. Rai has a long tradition of co-producing European animation. Mediaset's Boing channel airs third-party animation. Netflix Italy has commissioned Italian originals.",studios:[{n:'Rainbow S.p.A.',d:"Loreto — Winx Club, 44 Cats; one of Europe's largest animation studios"},{n:'Gruppo Alcuni',d:'Treviso — Geronimo Stilton, Grisù; long history in international co-pro'},{n:'Enanimation',d:'Rome — Pinocchio (Netflix); prestige animated feature production'}]},
+  pl:{name:'Poland',flag:'🇵🇱',tagline:"Eastern Europe's rising animation hub — great talent, competitive costs",color:'#1e4f8f',taxRelief:'30%',taxName:'Polish Film Institute (PISF) Cash Rebate',spend:'80% of production costs must be incurred in Poland',quickNote:"PISF cash rebate capped at PLN 15M per project. Poland's lower cost base means a 30% incentive stretches further than in Western Europe. VAT recovery routes also available.",detail:"PISF offers both selective (project-based) and automatic (market performance-linked) support. TVP has a commissioning strand for children's animation. Poland's lower production costs — typically 30–40% below Western European rates — combined with the incentive make it very attractive for service contracts. Warsaw, Łódź, and Kraków are the main animation clusters.",softMoney:'PISF (Polish Film Institute), KRRiT broadcast support, Polish Television (TVP), Polish Film Institute selective grants',broadcaster:'TVP / Polsat / TVN',broadcasterNote:"TVP ABC is the main children's animation destination and broadcaster-investor in Polish originals. Canal+ Polska is a growing buyer and co-producer of prestige animated content. TVP's obligations under Polish broadcasting law support domestic production.",studios:[{n:'Platige Image',d:'Warsaw — The Witcher short, Fallen Art (Oscar nominee); premium VFX & animation'},{n:'Se-ma-for',d:'Łódź — legendary stop-motion studio; Peter and the Wolf; service work'},{n:'Animoon',d:'Warsaw — service and original animation; growing international slate'}]},
+  se:{name:'Sweden',flag:'🇸🇪',tagline:"Nordic cool, Pippi Longstocking's home — quality over quantity",color:'#1f7a6e',taxRelief:'25%',taxName:'Swedish Film Institute (SFI) Production Support',spend:'80% of budget must be qualifying Swedish expenditure',quickNote:'SFI selective grants stack with the production incentive. The Nordisk Film & TV Fond is a pan-Nordic bonus for co-productions with Denmark, Norway, Finland, or Iceland.',detail:"SFI offers both automatic (market performance-linked) and selective support. SVT has strong broadcaster obligations to invest in Swedish content. The Nordisk Film & TV Fond (covering Sweden, Denmark, Norway, Finland, Iceland) provides co-production support unique to Nordic projects. Stockholm and Malmö are the main animation centres.",softMoney:'Swedish Film Institute (SFI), SVT broadcaster investment, Nordisk Film & TV Fond, Göteborg Film Fund, Film i Väst',broadcaster:'SVT / TV4',broadcasterNote:"SVT Barnkanalen (children's brand) and SVT1 are key animation commissioners. TV4 targets broader family content. Swedish content benefits from shared Scandinavian language range, expanding the addressable audience significantly.",studios:[{n:'Bur Animation',d:'Stockholm — prestige short films; consistent international festival presence'},{n:'Anagram',d:'Malmö — documentary-animation crossover; distinctive artistic style'},{n:'Studiofolk',d:"Stockholm — children's TV animation; growing original slate"}]},
+  no:{name:'Norway',flag:'🇳🇴',tagline:"Oil-funded creativity — generous public support for animation",color:'#2e7a2e',taxRelief:'25%',taxName:'Norwegian Film Institute (NFI) Production Incentive',spend:'80% of budget must be qualifying Norwegian expenditure',quickNote:"Minimum budget of NOK 2M. NFI also offers selective development and production grants on top of the incentive. Norway's sovereign wealth fund underpins generous cultural spending.",detail:"Norway's cultural policy means relatively generous arts funding by international standards. NFI covers the full pipeline from development through distribution. The Nordisk Film & TV Fond (shared with Sweden, Denmark, Finland, Iceland) is a bonus for pan-Nordic co-productions. Oslo is the main studio hub, with Bergen and Stavanger growing.",softMoney:'Norwegian Film Institute (NFI), NRK broadcaster investment, Nordisk Film & TV Fond, Bergen Film Fund',broadcaster:'NRK / TV 2',broadcasterNote:"NRK Super (children's brand) is the primary animation commissioner. NRK has strong content obligations under its public service remit. TV 2 targets broader family audiences. Norway's high broadband penetration makes streaming-first strategies very viable.",studios:[{n:'Qvisten Animation',d:"Oslo — service animation; Norwegian children's originals"},{n:'Storyline Studios',d:"Oslo — Nelly Rapp; children's features and series"},{n:'Tangent Animation',d:'Norway/Canada — feature animation co-productions'}]},
+  dk:{name:'Denmark',flag:'🇩🇰',tagline:"Small country, outsized animation ambition — the Nordic creative hub",color:'#b03560',taxRelief:'22%',taxName:'Danish Film Institute (DFI) Production Support',spend:'80% of qualifying production costs must be in Denmark',quickNote:"DFI's market-based incentive is lower than some neighbours, but selective grants can bridge the gap. Nordisk Film & TV Fond adds further pan-Nordic co-production potential.",detail:"DFI offers automatic (market-performance linked) and selective support. DR has a significant commissioning budget and actively invests in Danish animation for children and adults. Denmark is an attractive base for Scandinavian-language co-productions. Copenhagen is a vibrant creative hub with strong ties to Swedish and Norwegian studios.",softMoney:'Danish Film Institute (DFI), DR broadcaster investment, Nordisk Film & TV Fond, Film Fyn, New Danish Screen',broadcaster:'DR / TV 2 Denmark',broadcasterNote:"DR Ramasjang (children's channel) is the key animation commissioner. DR has a distinguished tradition of producing acclaimed adult animation. TV 2 targets broader family audiences. Both have AVMS obligations supporting local production.",studios:[{n:'A. Film',d:'Copenhagen — The Danish Poet (Oscar winner); feature animation heritage'},{n:'Snowglobe',d:'Copenhagen — premium series; international co-productions'},{n:'Filmgraf',d:"Copenhagen — children's animation; DR regular co-producer"}]},
+  pt:{name:'Portugal',flag:'🇵🇹',tagline:"A hidden gem — improving incentives, low costs, and Lusophone market access",color:'#1f7a6e',taxRelief:'25%',taxName:'FICA (Fundo de Investimento no Cinema e Audiovisual)',spend:'50% of total budget must be qualifying Portuguese expenditure',quickNote:"Portugal's incentive has been strengthened in recent years. International Co-production Incentive at 25%. Lower cost base than Spain or France — typically 25–35% cheaper.",detail:"ICA (Instituto do Cinema e do Audiovisual) provides selective grants and administers FICA. RTP has broadcaster obligations. Portugal's Lusophone connections give access to the Brazilian market and Lusophone Africa — a unique linguistic bonus worth considering for co-production strategy. Lisbon's growing creative scene has attracted international studio attention.",softMoney:"ICA, FICA, RTP broadcaster investment, Câmara Municipal de Lisboa, Portugal Film Commission",broadcaster:'RTP / SIC / TVI',broadcasterNote:"RTP (public broadcaster) commissions children's animation and has growing streaming ambitions via RTP Play. The Brazilian market access through shared language is a significant strategic advantage for Portuguese co-productions.",studios:[{n:'Sardinha em Lata',d:'Lisbon — festival circuit short films; growing international reputation'},{n:'Animanostra',d:"Porto — award-winning shorts and children's content"},{n:'Blink Industries',d:'Lisbon — international service arm; UK and European co-productions'}]},
+  lu:{name:'Luxembourg',flag:'🇱🇺',tagline:"Europe's most flexible co-production partner — low threshold, high value",color:'#5e3490',taxRelief:'30–40%',taxName:'Film Fund Luxembourg Production Incentive',spend:'Only 25% qualifying Luxembourg expenditure required — lowest threshold in Europe',quickNote:'The most flexible spending threshold in Europe. Particularly attractive for international co-productions needing a European partner. Film Fund Luxembourg is proactive and internationally connected.',detail:"Luxembourg's Film Fund is well-funded relative to territory size. It is a favourite co-production partner for French, German, and Belgian studios seeking to stack incentives. VAT recovery routes add additional value. RTL Group (headquartered in Luxembourg) is a major international media company. The 25% minimum spend requirement makes Luxembourg uniquely easy to qualify for.",softMoney:'Film Fund Luxembourg, ARTES cultural broadcaster, Luxembourg City Film Fund, European Investment Fund (for slate development)',broadcaster:'RTL Luxembourg / Arte',broadcasterNote:"RTL Luxembourg broadcasts to Luxembourg, Belgium, and parts of France and Germany. Arte (Franco-German cultural channel) is a major animation commissioner for prestige content. Luxembourg's position at the heart of Europe makes co-production with French, German, and Belgian broadcasters straightforward.",studios:[{n:'Mélusine Productions',d:'Luxembourg City — The Big Bad Fox; prestige feature animation'},{n:'Bidibul Productions',d:'Luxembourg City — European co-production specialist'},{n:'Samsa Film',d:'Luxembourg City — features and series; European co-productions'}]},
+  at:{name:'Austria',flag:'🇦🇹',tagline:"Central European crossroads — gateway to DACH market and Eastern Europe",color:'#c25518',taxRelief:'25%',taxName:'FISA (Filmstandort Austria) Cash Rebate',spend:'75% of total production budget must be in Austria',quickNote:"FISA launched in 2020, offering a 25% cash rebate on qualifying Austrian spend. ÖFI (Austrian Film Institute) provides selective grants on top. Vienna is the main hub.",detail:"Austria benefits from the same German-language (DACH) market as Germany and Switzerland, making German broadcaster relationships accessible. The ÖFI Film/Fernsehabkommen is an annual agreement between ÖFI and ORF, investing a fixed sum in domestic production. Vienna's strong creative infrastructure makes it attractive for both Austrian originals and service work.",softMoney:"ÖFI (Austrian Film Institute), FISA cash rebate, Filmfonds Wien (Vienna Film Fund), ORF Film/Fernsehabkommen, Cine Tirol",broadcaster:'ORF / ATV',broadcasterNote:"ORF is the primary broadcaster and investor in Austrian animation. Flimmit (ORF's streaming platform) is growing. Austrian animation typically targets the wider DACH (German-speaking) market, giving access to 100M+ German-language viewers.",studios:[{n:'Arx Anima',d:'Vienna — service animation for international clients; DACH market'},{n:'Ulysses Filmproduktion',d:'Vienna — documentary-animation crossover; distinctive style'},{n:'Dor Film',d:'Vienna — features and television; DACH market focus'}]},
+  cz:{name:'Czech Republic',flag:'🇨🇿',tagline:"Legendary puppet film tradition meets modern CG ambition in Prague",color:'#e09a18',taxRelief:'20%',taxName:'Czech Film Fund (CFF) Cash Rebate',spend:'80% of total budget must be qualifying Czech expenditure',quickNote:"Up to CZK 100M per project. Prague is a well-established service city — Barrandov Studios is one of Europe's largest complexes. Lower costs than Western Europe.",detail:"The Czech Republic has a world-famous animation tradition going back to Jiří Trnka and Jan Švankmajer. Czech Television (ČT) has a children's animation commissioning strand. Prague's highly-skilled, cost-effective talent base attracts service work from Western European studios. Barrandov Studios provides excellent infrastructure. The Czech animation legacy enhances prestige of co-productions.",softMoney:'Czech Film Fund (CFF), State Culture Fund, Czech Television (CT) broadcaster investment, Prague Film Fund, Czech-Slovak Creative Development',broadcaster:'ČT (Czech Television) / Prima / Nova',broadcasterNote:"Czech Television's ČT :D children's channel is the primary animation commissioner. Czech animation has a strong international festival reputation that opens doors to European co-production funding and prestige partnerships.",studios:[{n:'Bionaut Films',d:'Prague — award-winning shorts; growing animated feature slate'},{n:'Bratři v triku',d:'Prague — legendary studio; Karel Zeman heritage; co-productions'},{n:'Alkay Animation',d:'Prague — CG service work and original properties'}]},
+  hu:{name:'Hungary',flag:'🇭🇺',tagline:"Central Europe's secret weapon — high skills, very competitive costs",color:'#c93528',taxRelief:'30%',taxName:'National Film Institute Hungary (NFI) Production Support',spend:'80% of total budget must be incurred in Hungary',quickNote:"NFI is well-funded and proactive. Budapest is a growing hub for international service animation with highly-skilled, cost-effective talent from the Hungarian University of Fine Arts.",detail:"Hungary offers excellent value for money in European animation. NFI selective funding is available for qualifying Hungarian productions. Budapest's talent base is strong and lower-cost than Western Europe — typically 30–40% cheaper. Hungary's EU membership and proximity to Vienna makes it accessible for DACH and Western European co-productions.",softMoney:'National Film Institute Hungary (NFI), MTVA (public broadcaster), Budapest Film Office, Creative Europe (EU programme)',broadcaster:'MTVA (M1/Duna) / RTL Klub / TV2',broadcasterNote:"MTVA (Hungarian public broadcaster) commissions children's animation. RTL Klub is the leading commercial broadcaster. Hungary's bilingual talent pool and proximity to Vienna makes it attractive for DACH co-productions and service work.",studios:[{n:'Kedd Animation',d:'Budapest — award-winning shorts; consistent festival circuit presence'},{n:'Umbrella Entertainment',d:'Budapest — CG service work; growing international client base'},{n:'Campfilm',d:'Budapest — stop-motion and 2D animation; prestige short film production'}]},
+  ro:{name:'Romania',flag:'🇷🇴',tagline:"Bucharest's animation scene is growing fast — Europe's most affordable service hub",color:'#2e7a2e',taxRelief:'30%',taxName:'National Cinema Center Romania (CNC) Cash Rebate',spend:'70% of total budget must be qualifying Romanian expenditure',quickNote:"Romania's 30% rebate launched in 2019 and has driven a significant uptick in international service work. Bucharest and Cluj-Napoca are the main hubs. Very cost-competitive.",detail:"Romania's incentive is relatively new but well-structured and growing in reputation. CNC offers selective grants for Romanian animation. TVR commissions domestic animation. The cost base is 30–40% cheaper than Western Europe. Combined with the 30% incentive, Romania offers outstanding value. Cluj-Napoca is emerging as a creative hub alongside Bucharest.",softMoney:'CNC Romania (National Cinema Center), TVR broadcaster investment, Transylvania International Film Fund, Creative Europe',broadcaster:'TVR (Public) / Pro TV / Antena 1',broadcasterNote:"TVR (Romanian public television) has a children's animation strand. Pro TV, as part of the Central European Media Enterprises group, is the leading commercial broadcaster. Romania's growing tech sector creates a talent pool with animation crossover skills.",studios:[{n:'Saga Film',d:'Bucharest — animated features and service work; long track record'},{n:'Tangent Animation Romania',d:'Bucharest — service animation; growing international capabilities'},{n:'MediaPro Studios',d:'Bucharest — full-service studio with expanding animation department'}]},
+  fi:{name:'Finland',flag:'🇫🇮',tagline:"Nordic serenity, Moomin heritage, deep public broadcasting support",color:'#1e4f8f',taxRelief:'25%',taxName:'Finnish Film Foundation (SES) Production Incentive',spend:'80% of qualifying Finnish expenditure',quickNote:"SES offers selective development and production grants alongside the incentive. Moomin is Finland's most notable animation export. Nordisk Fund adds value for pan-Nordic co-productions.",detail:"Finland has a strong animated storytelling tradition (Moomins, Angry Birds via Rovio). Yle has consistent commissioning budgets and growing streaming ambitions through Yle Areena. The Nordisk Film & TV Fond provides additional resources for Nordic co-productions. Finnish studios benefit from lower costs than Sweden while maintaining Nordic quality expectations.",softMoney:'Finnish Film Foundation (SES), Yle broadcaster investment, Nordisk Film & TV Fond, Helsinki Region Film Fund, Business Finland',broadcaster:'Yle / MTV Finland',broadcasterNote:"Yle (Finnish public broadcaster) is the primary animation commissioner. Yle Areena's streaming growth is creating new animation windows. Rovio's global success has put Finnish digital-animation crossover on the map internationally.",studios:[{n:'Gigglebug Entertainment',d:"Helsinki — Lily's Driftwood Bay, My Friend Robbie; international sales"},{n:'Rovio Animation',d:'Helsinki — Angry Birds franchise; global gaming-animation crossover'},{n:'Anima Vitae',d:"Helsinki — The Most Magnificent Thing; quality animation for children"}]},
+  hr:{name:'Croatia',flag:'🇭🇷',tagline:"Home of the Zagreb School — animation's avant-garde heritage lives on",color:'#5e3490',taxRelief:'20%',taxName:'HAVC (Croatian Audiovisual Centre) Production Incentive',spend:'80% of total budget must be qualifying Croatian expenditure',quickNote:"Croatia has a genuinely storied animation history. The Zagreb School of Animation was one of the most innovative movements in world animation history. HAVC offers selective and incentive funding.",detail:"HAVC has selective development and production grants. HRT has a modest animation commissioning budget. Croatia's Zagreb School legacy makes it attractive for prestigious co-productions that want to reference a distinguished artistic tradition. Croatia's EU membership (since 2013) enables access to Creative Europe funding. Costs are competitive with Hungary and Poland.",softMoney:'HAVC (Croatian Audiovisual Centre), HRT broadcaster investment, Creative Europe, City of Zagreb Cultural Fund',broadcaster:'HRT (Public) / RTL Hrvatska / Nova TV',broadcasterNote:"HRT (Croatian Radio-Television) commissions domestic animation, often referencing the Zagreb School heritage. The broadcaster has AVMS obligations supporting local content production.",studios:[{n:'Zagreb Film',d:'Zagreb — legendary studio; Zagreb School heritage; archive and new work'},{n:'Bonobostudio',d:'Zagreb — festival circuit favourite; international co-productions'},{n:'Kreativni sindikat',d:"Zagreb — children's animation series; regional distribution"}]},
 };
 
-// ISO numeric → ISO3
-const NUM_TO_ISO3 = {826:'GBR',250:'FRA',372:'IRL',276:'DEU',724:'ESP',56:'BEL',528:'NLD',380:'ITA',616:'POL',752:'SWE',578:'NOR',208:'DNK',620:'PRT',442:'LUX',40:'AUT',203:'CZE',348:'HUN',246:'FIN',642:'ROM'};
-const COLOURS = {GBR:'#c0406a',FRA:'#2a5fa0',IRL:'#3a8a3a',DEU:'#d63c2a',ESP:'#e8a020',BEL:'#2a8a7e',NLD:'#6b3fa0',ITA:'#d06020',POL:'#4a7ec0',SWE:'#a04060',NOR:'#3a7a5a',DNK:'#c84848',PRT:'#207a6a',LUX:'#c06030',AUT:'#8a3a8a',CZE:'#5a8a3a',HUN:'#a06020',FIN:'#406090',ROM:'#8a4a2a'};
+const COLORS={};
+Object.entries(DATA).forEach(([k,v])=>COLORS[k]=v.color);
+const NO_DATA='#2a3a4a';
+const N2A={826:'gb',250:'fr',372:'ie',276:'de',724:'es',56:'be',528:'nl',380:'it',616:'pl',752:'se',578:'no',208:'dk',620:'pt',442:'lu',40:'at',203:'cz',348:'hu',642:'ro',246:'fi',191:'hr',756:'ch',300:'gr',100:'bg',703:'sk',705:'si',233:'ee',428:'lv',440:'lt',498:'md',804:'ua',112:'by',643:'ru',792:'tr',8:'al',688:'rs',70:'ba',807:'mk',499:'me',352:'is'};
+const SHORT={gb:'UK',fr:'FR',de:'DE',es:'ES',ie:'IE',be:'BE',nl:'NL',it:'IT',pl:'PL',se:'SE',no:'NO',dk:'DK',pt:'PT',lu:'LU',at:'AT',cz:'CZ',hu:'HU',ro:'RO',fi:'FI',hr:'HR'};
+const BIG=new Set(['gb','fr','de','es','pl','it','se','no','ro','fi']);
 
-// Label lon/lat
-const LABELS = {GBR:[-2,54],FRA:[2,46.5],IRL:[-8,53.5],DEU:[10,51],ESP:[-3.5,40],BEL:[4.5,50.5],NLD:[5.3,52.3],ITA:[12,43],POL:[19.5,52],SWE:[17,62],NOR:[10,62],DNK:[10,56],PRT:[-8,39.5],LUX:[6.1,49.8],AUT:[14.5,47.5],CZE:[15.5,50],HUN:[19,47],FIN:[26,63],ROM:[25,45.5]};
-const ABBR = {GBR:'UK',FRA:'FR',IRL:'IRL',DEU:'DE',ESP:'ES',BEL:'BE',NLD:'NL',ITA:'IT',POL:'PL',SWE:'SE',NOR:'NO',DNK:'DK',PRT:'PT',LUX:'LU',AUT:'AT',CZE:'CZ',HUN:'HU',FIN:'FI',ROM:'RO'};
+const mapWrap=document.getElementById('map-wrap');
+const svgRoot=d3.select('#map-svg');
+const tipEl=document.getElementById('map-tooltip');
+const hintEl=document.getElementById('hint-bubble');
+const idleEl=document.getElementById('idle');
+const panelEl=document.getElementById('panel');
+const sidebarEl=document.getElementById('sidebar');
+const handleText=document.getElementById('handle-text');
 
-// ── D3 MAP ────────────────────────────────────────────────────
-const mapWrap = document.getElementById('map-wrap');
-const W = mapWrap.clientWidth || 900;
-const H = mapWrap.clientHeight || 640;
+let activeId=null, geoData=null, proj, pathFn;
 
-const svg = d3.select('#map-wrap').append('svg')
-  .attr('width','100%').attr('height','100%')
-  .attr('viewBox',`0 0 ${W} ${H}`);
+function buildProj(){
+  const W=mapWrap.clientWidth, H=mapWrap.clientHeight;
+  if(isMobile()) return d3.geoConicConformal().center([10,52]).scale(W*1.45).translate([W*.5,H*.45]);
+  return d3.geoConicConformal().center([15,54]).scale(W*.95).translate([W*.42,H*.52]);
+}
 
-const projection = d3.geoAzimuthalEqualArea()
-  .rotate([-15,-52,0])
-  .scale(Math.min(W,H)*1.48)
-  .translate([W*0.42, H*0.52])
-  .clipAngle(180);
+function redraw(){
+  svgRoot.selectAll('*').remove();
+  proj=buildProj(); pathFn=d3.geoPath().projection(proj);
+  const feats=topojson.feature(geoData,geoData.objects.countries).features
+    .filter(f=>{const c=d3.geoCentroid(f);return c[0]>-25&&c[0]<62&&c[1]>33&&c[1]<72;});
 
-const pathGen = d3.geoPath().projection(projection);
-
-// Graticule
-svg.append('path')
-  .datum(d3.geoGraticule().step([10,10])())
-  .attr('d', pathGen)
-  .attr('fill','none')
-  .attr('stroke','rgba(255,255,255,0.1)')
-  .attr('stroke-width',0.5);
-
-const tooltip = document.getElementById('tooltip');
-const idlePanel = document.getElementById('idle-panel');
-const countryPanel = document.getElementById('country-panel');
-let activeIso = null;
-
-d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world => {
-  document.getElementById('loading').remove();
-  const countries = topojson.feature(world, world.objects.countries);
-  const g = svg.append('g');
-
-  g.selectAll('.country-path')
-    .data(countries.features)
-    .enter().append('path')
-    .attr('class', d => 'country-path' + (NUM_TO_ISO3[+d.id] ? '' : ' no-data'))
-    .attr('d', pathGen)
-    .attr('fill', d => { const iso3 = NUM_TO_ISO3[+d.id]; return iso3 ? COLOURS[iso3] : '#c8d8e4'; })
-    .on('mouseenter', function(event, d) {
-      const iso3 = NUM_TO_ISO3[+d.id];
-      if (!iso3 || !DATA[iso3]) return;
+  svgRoot.append('g').attr('id','cg').selectAll('path').data(feats).join('path')
+    .attr('d',pathFn)
+    .attr('class',f=>{const a=N2A[+f.id];return 'country-path'+(a&&DATA[a]?' has-data':' no-data');})
+    .attr('fill',f=>{const a=N2A[+f.id];return a&&COLORS[a]?COLORS[a]:NO_DATA;})
+    .on('mouseenter',function(e,f){
+      const a=N2A[+f.id];if(!a||!DATA[a])return;
       document.body.classList.add('on-country');
-      const info = DATA[iso3];
-      tooltip.innerHTML = `<strong>${info.flag} ${info.name}</strong>&nbsp;&nbsp;<span class="tt-rate">${info.taxRelief}</span>`;
-      tooltip.classList.add('visible');
+      tipEl.textContent=DATA[a].flag+' '+DATA[a].name+' · '+DATA[a].taxRelief;
+      tipEl.classList.add('visible');
+      if(a!==activeId)d3.select(this).style('filter','brightness(1.32) saturate(1.25)');
     })
-    .on('mousemove', function(event) {
-      tooltip.style.left = event.clientX + 'px';
-      tooltip.style.top = event.clientY + 'px';
+    .on('mousemove',function(e){const[mx,my]=d3.pointer(e,mapWrap);tipEl.style.left=mx+'px';tipEl.style.top=my+'px';})
+    .on('mouseleave',function(e,f){
+      document.body.classList.remove('on-country');tipEl.classList.remove('visible');
+      const a=N2A[+f.id];if(a!==activeId)d3.select(this).style('filter',null);
     })
-    .on('mouseleave', function() {
-      document.body.classList.remove('on-country');
-      tooltip.classList.remove('visible');
-    })
-    .on('click', function(event, d) {
-      const iso3 = NUM_TO_ISO3[+d.id];
-      if (!iso3 || !DATA[iso3]) return;
-      if (activeIso === iso3) { closePanel(); return; }
-      activeIso = iso3;
-      g.selectAll('.country-path').classed('active', false);
-      d3.select(this).classed('active', true);
-      showPanel(DATA[iso3]);
-    });
+    .on('click',function(e,f){const a=N2A[+f.id];if(!a||!DATA[a])return;activeId===a?closePanel():openPanel(a);});
 
-  // Labels
-  Object.entries(LABELS).forEach(([iso3, [lon, lat]]) => {
-    const coords = projection([lon, lat]);
-    if (!coords) return;
-    svg.append('text').attr('class','country-label')
-      .attr('x', coords[0]).attr('y', coords[1])
-      .text(ABBR[iso3]);
-  });
+  svgRoot.append('g').attr('id','lg').selectAll('text').data(feats.filter(f=>SHORT[N2A[+f.id]])).join('text')
+    .attr('transform',f=>{const c=proj(d3.geoCentroid(f));return c?`translate(${c})`:'translate(-9999,-9999)';})
+    .attr('text-anchor','middle').attr('dominant-baseline','middle')
+    .attr('font-family',"'Syne',sans-serif")
+    .attr('font-size',f=>BIG.has(N2A[+f.id])?(isMobile()?'9px':'10px'):(isMobile()?'7px':'8px'))
+    .attr('font-weight','700').attr('fill','rgba(255,255,255,.7)').attr('pointer-events','none').attr('letter-spacing','.04em')
+    .text(f=>SHORT[N2A[+f.id]]||'');
 
-}).catch(err => {
-  document.getElementById('loading').innerHTML = '⚠️ Map failed to load. Check network or CDN access.';
-  console.error(err);
-});
+  if(activeId){
+    svgRoot.select('#cg').selectAll('path').filter(f=>N2A[+f.id]===activeId).classed('selected',true).style('filter',null);
+  }
+}
 
-// ── PANEL ────────────────────────────────────────────────────
-function showPanel(d) {
-  idlePanel.style.display = 'none';
-  countryPanel.classList.add('open');
-  countryPanel.innerHTML = `
-    <div class="cp-head">
-      <button class="close-btn" onclick="closePanel()">✕</button>
-      <div class="cp-flag-name">
-        <span class="cp-flag">${d.flag}</span>
-        <span class="cp-name">${d.name}</span>
-      </div>
-      <p class="cp-tagline">${d.tagline}</p>
+function openPanel(a2){
+  if(activeId){svgRoot.select('#cg').selectAll('path').filter(f=>N2A[+f.id]===activeId).classed('selected',false).style('filter',null);}
+  activeId=a2;
+  svgRoot.select('#cg').selectAll('path').filter(f=>N2A[+f.id]===a2).classed('selected',true).style('filter',null);
+  const d=DATA[a2];
+  idleEl.style.display='none';
+  panelEl.classList.add('open');
+  panelEl.innerHTML=`
+    <div class="p-head">
+      <button class="p-close" onclick="closePanel()">✕</button>
+      <div class="p-flag-name"><span class="p-flag">${d.flag}</span><span class="p-name">${d.name}</span></div>
+      <p class="p-tagline">${d.tagline}</p>
     </div>
-    <div class="stats-grid">
-      <div class="stat"><div class="stat-lbl">Tax Relief</div><div class="stat-val">${d.taxRelief}</div></div>
-      <div class="stat"><div class="stat-lbl">Scheme</div><div class="stat-val sm">${d.taxName}</div></div>
-      <div class="stat full"><div class="stat-lbl">Minimum Local Spend</div><div class="stat-val sm">${d.spendThreshold}</div></div>
+    <div class="p-stats">
+      <div class="stat"><div class="stat-l">Tax Relief</div><div class="stat-v lg">${d.taxRelief}</div></div>
+      <div class="stat"><div class="stat-l">Scheme</div><div class="stat-v sm" style="padding-top:2px;line-height:1.3">${d.taxName}</div></div>
+      <div class="stat full"><div class="stat-l">Minimum Local Spend Required</div><div class="stat-v sm">${d.spend}</div></div>
     </div>
-    <div class="cp-section">
+    <div class="p-sec">
       <div class="sec-title">💰 Tax Incentive</div>
-      <p class="sec-text">${d.quickNote}</p>
-      <button class="expand-btn" onclick="toggleExpand(this)">
-        <span class="lbl">Full incentive &amp; soft money detail</span>
-        <span class="chevron">▾</span>
-      </button>
-      <div class="expandable"><div class="expand-inner">${d.softDetail}</div></div>
-    </div>
-    <div class="cp-section">
-      <div class="sec-title">🎯 Screen Agencies &amp; Soft Money</div>
-      <p class="sec-text">${d.softMoney}</p>
-    </div>
-    <div class="cp-section">
-      <div class="sec-title">📺 Key Broadcaster</div>
-      <div class="broadcaster">
-        <div class="bc-name">${d.broadcaster}</div>
-        <div class="bc-note">${d.broadcasterNote}</div>
+      <p class="p-text">${d.quickNote}</p>
+      <div class="expand-row">
+        <button class="expand-btn" onclick="toggleExpand(this)"><span class="btn-lbl">Full incentive &amp; stacking details</span><span class="arrow">▾</span></button>
+        <div class="expand-body"><div class="expand-inner">${d.detail}</div></div>
       </div>
     </div>
-    <div class="cp-section">
-      <div class="sec-title">🏢 Notable Studios</div>
-      <ul class="studios">${d.studios.map(s=>`<li><div class="s-dot"></div><div><div class="s-name">${s.name}</div><div class="s-note">${s.note}</div></div></li>`).join('')}</ul>
+    <div class="p-sec"><div class="sec-title">🎯 Soft Money &amp; Screen Agencies</div><p class="p-text">${d.softMoney}</p></div>
+    <div class="p-sec">
+      <div class="sec-title">📺 Key Broadcaster</div>
+      <div class="bcast"><div class="bcast-name">${d.broadcaster}</div><div class="bcast-note">${d.broadcasterNote}</div></div>
     </div>
-    <div class="data-note">Data reflects best available knowledge as of early 2025. Incentive rates and fund guidelines change regularly — always verify with a qualified entertainment lawyer or local film commission before making production decisions.</div>
+    <div class="p-sec">
+      <div class="sec-title">🏢 Notable Studios</div>
+      <ul class="studios">${d.studios.map(s=>`<li><div class="s-dot"></div><div><div class="s-name">${s.n}</div><div class="s-note">${s.d}</div></div></li>`).join('')}</ul>
+    </div>
+    <div class="disclaimer">Data reflects best available knowledge as of early 2025. Incentive rates and fund guidelines change regularly — always verify with a qualified entertainment lawyer or local film commission before making production decisions.</div>
   `;
-  countryPanel.scrollTop = 0;
+  panelEl.scrollTop=0;
+  if(isMobile()){sidebarEl.classList.add('sheet-open');handleText.textContent=d.flag+' '+d.name;handleText.classList.add('active');}
+  if(hintEl){hintEl.style.opacity='0';setTimeout(()=>hintEl?.remove(),550);}
 }
 
-function closePanel() {
-  activeIso = null;
-  countryPanel.classList.remove('open');
-  countryPanel.innerHTML = '';
-  idlePanel.style.display = 'flex';
-  d3.selectAll('.country-path').classed('active', false);
+function closePanel(){
+  if(activeId){svgRoot.select('#cg').selectAll('path').filter(f=>N2A[+f.id]===activeId).classed('selected',false).style('filter',null);activeId=null;}
+  panelEl.classList.remove('open');panelEl.innerHTML='';idleEl.style.display='flex';
+  if(isMobile()){sidebarEl.classList.remove('sheet-open');handleText.textContent='Tap a country to explore';handleText.classList.remove('active');}
 }
 
-function toggleExpand(btn) {
-  const exp = btn.nextElementSibling;
-  const open = exp.classList.toggle('open');
-  btn.classList.toggle('open');
-  btn.querySelector('.lbl').textContent = open ? 'Hide detail' : 'Full incentive & soft money detail';
+function toggleExpand(btn){
+  const body=btn.nextElementSibling;const open=body.classList.toggle('open');
+  btn.classList.toggle('open',open);btn.querySelector('.btn-lbl').textContent=open?'Hide details':'Full incentive & stacking details';
 }
+
+document.getElementById('sheet-handle').addEventListener('click',()=>{if(isMobile())sidebarEl.classList.toggle('sheet-open');});
+
+fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+  .then(r=>r.json()).then(w=>{geoData=w;document.getElementById('loading').remove();redraw();})
+  .catch(()=>{document.getElementById('loading').innerHTML='⚠️ Map failed to load. Please check your connection.';});
+
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(geoData)redraw();},180);});
 </script>
 </body>
 </html>
