@@ -3,1030 +3,420 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BBC Credits Checker</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>BBC Children's Credits Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0e0e12;
-    --surface: #16161c;
-    --surface2: #1e1e26;
-    --border: #2a2a36;
-    --text: #e8e8f0;
-    --muted: #7070a0;
-    --green: #00e87a;
-    --green-bg: #001f10;
-    --green-border: #00512a;
-    --orange: #ff8c00;
-    --orange-bg: #1a0e00;
-    --orange-border: #5a3000;
-    --red: #ff3c5a;
-    --red-bg: #1a0008;
-    --red-border: #5a0018;
-    --accent: #4e7cff;
-  }
+:root {
+  --cbbc-green:    #00A752;
+  --cbbc-green-l:  #e6f7ee;
+  --cbbc-green-b:  #7dd4ab;
+  --cbbc-purple:   #5C2D91;
+  --cbeeb-yellow:  #FFD200;
+  --cbeeb-yellow-l:#fffae0;
+  --cbeeb-yellow-b:#e0bb00;
+  --cbeeb-purple:  #5C2D91;
+  --cbeeb-purple-l:#f0eafa;
+  --ok:        #00875A;
+  --ok-l:      #e6f6f0;
+  --ok-m:      #a3dfc5;
+  --ok-b:      #4dba92;
+  --ok-t:      #004d33;
+  --warn:      #B85C00;
+  --warn-l:    #fff4e5;
+  --warn-m:    #ffc97a;
+  --warn-b:    #e88c30;
+  --warn-t:    #7a3c00;
+  --no:        #C0122A;
+  --no-l:      #fdecea;
+  --no-m:      #f2a0aa;
+  --no-b:      #e05060;
+  --no-t:      #7a0018;
+  --bg:        #f5f4f0;
+  --surf:      #ffffff;
+  --bord:      #ddd8d0;
+  --text:      #1a1612;
+  --muted:     #7a7268;
+  --muted2:    #b0a898;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* TOPBAR */
+.topbar{background:#1a1612;padding:0 14px;display:flex;align-items:center;justify-content:space-between;height:50px;position:sticky;top:0;z-index:200;gap:10px}
+.bbc-logo{display:flex;gap:3px;flex-shrink:0}
+.bbc-logo span{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:white;color:#1a1612;font-weight:900;font-size:11px;border-radius:2px}
+.topbar-label{color:rgba(255,255,255,.65);font-size:12px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-sw{display:flex;background:rgba(255,255,255,.1);border-radius:20px;padding:3px;gap:2px;flex-shrink:0}
+.chb{font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;padding:4px 10px;border-radius:16px;border:none;cursor:pointer;background:transparent;color:rgba(255,255,255,.45);transition:all .15s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.chb:hover{color:white}
+.chb.a-all  {background:rgba(255,255,255,.18);color:white}
+.chb.a-cbbc {background:var(--cbbc-green);color:white}
+.chb.a-cbeeb{background:var(--cbeeb-purple);color:white}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* HERO */
+.hero{background:#1a1612;padding:26px 16px 42px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50px;right:-50px;width:220px;height:220px;border-radius:50%;background:var(--cbbc-green);opacity:.1;pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:22px;background:var(--bg);border-radius:22px 22px 0 0}
+.hero-in{max-width:700px;margin:0 auto;position:relative;z-index:1}
+.ch-badges{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.chbadge{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:900;letter-spacing:.04em}
+.cbbc-badge{background:var(--cbbc-green);color:white}
+.cbeeb-badge{background:var(--cbeeb-yellow);color:#1a1612}
+.cbadge-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.6}
+.hero h1{font-size:clamp(22px,6vw,38px);font-weight:900;color:white;line-height:1.1;letter-spacing:-.02em;margin-bottom:10px}
+.hero h1 .hg{color:var(--cbbc-green)}
+.hero h1 .hy{color:var(--cbeeb-yellow)}
+.hero-sub{color:rgba(255,255,255,.5);font-size:13px;font-weight:600;line-height:1.6;max-width:460px;margin-bottom:22px}
+.sw{position:relative;max-width:560px}
+.sw svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted);pointer-events:none}
+#search{width:100%;background:white;border:none;border-radius:10px;padding:14px 14px 14px 42px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;color:var(--text);outline:none;box-shadow:0 4px 20px rgba(0,0,0,.25);transition:box-shadow .2s;-webkit-appearance:none}
+#search::placeholder{color:var(--muted2);font-weight:600}
+#search:focus{box-shadow:0 4px 20px rgba(0,0,0,.3),0 0 0 3px rgba(0,167,82,.3)}
+.tips{margin-top:8px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.28);letter-spacing:.06em}
 
-  /* Subtle grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(78,124,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(78,124,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* MAIN */
+.main{max-width:700px;margin:0 auto;padding:18px 16px 80px}
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 48px 24px 80px;
-  }
+/* LEGEND */
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.lc{background:var(--surf);border:2px solid var(--bord);border-radius:10px;padding:12px;cursor:pointer;transition:transform .12s,box-shadow .12s;user-select:none;-webkit-tap-highlight-color:transparent}
+.lc:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.07)}
+.lc.s-ok  {border-color:var(--ok-b);background:var(--ok-l)}
+.lc.s-warn{border-color:var(--warn-b);background:var(--warn-l)}
+.lc.s-no  {border-color:var(--no-b);background:var(--no-l)}
+.lt{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.ld{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ld-ok  {background:var(--ok)}
+.ld-warn{background:var(--warn)}
+.ld-no  {background:var(--no)}
+.ln{font-size:12px;font-weight:800;color:var(--text);line-height:1.2}
+.ldesc{font-size:11px;font-weight:600;color:var(--muted);line-height:1.4}
 
-  /* Header */
-  header {
-    margin-bottom: 48px;
-  }
+/* FILTER */
+.frow{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.flabel{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+.fb{font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;border:2px solid var(--bord);background:var(--surf);color:var(--muted);cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent}
+.fb:hover{border-color:var(--text);color:var(--text)}
+.fb.on{background:#1a1612;border-color:#1a1612;color:white}
 
-  .bbc-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 6px 12px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }
+/* DISCLAIMER */
+.disc{background:var(--warn-l);border:1px solid var(--warn-m);border-left:4px solid var(--warn);border-radius:8px;padding:10px 14px;font-size:12px;font-weight:700;color:var(--warn-t);line-height:1.5;margin-bottom:16px}
 
-  .bbc-badge::before {
-    content: '';
-    width: 6px; height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
-  }
+/* META */
+.rmeta{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
-  }
+/* SECTION HEAD */
+.sh{display:flex;align-items:center;gap:8px;padding:13px 0 7px;border-bottom:2px solid var(--bord);margin-bottom:7px}
+.sh-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sh-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex:1}
+.sh-cnt{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2)}
 
-  h1 {
-    font-size: clamp(28px, 5vw, 44px);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
+/* CARD */
+.card{background:var(--surf);border:2px solid var(--bord);border-radius:10px;margin-bottom:6px;overflow:hidden;animation:pu .15s ease both;-webkit-tap-highlight-color:transparent}
+@keyframes pu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card.ok  {border-color:var(--ok-b)}
+.card.warn{border-color:var(--warn-b)}
+.card.no  {border-color:var(--no-b)}
+.chd{display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;user-select:none}
+.stripe{width:4px;min-height:34px;border-radius:3px;flex-shrink:0;align-self:stretch}
+.ok   .stripe{background:var(--ok)}
+.warn .stripe{background:var(--warn)}
+.no   .stripe{background:var(--no)}
+.cm{flex:1;min-width:0}
+.ctr{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:3px}
+.ctitle{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.sp{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;padding:2px 7px;border-radius:20px;letter-spacing:.08em;text-transform:uppercase;flex-shrink:0}
+.ok   .sp{background:var(--ok-l);color:var(--ok-t);border:1px solid var(--ok-m)}
+.warn .sp{background:var(--warn-l);color:var(--warn-t);border:1px solid var(--warn-m)}
+.no   .sp{background:var(--no-l);color:var(--no-t);border:1px solid var(--no-m)}
+.chtag{font-family:'Nunito',sans-serif;font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:.03em;flex-shrink:0}
+.tc-both {background:#1a1612;color:white}
+.tc-cbbc {background:var(--cbbc-green);color:white}
+.tc-cbeeb{background:var(--cbeeb-purple);color:white}
+.ccat{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ei{font-size:14px;color:var(--muted2);flex-shrink:0;transition:transform .2s;line-height:1;margin-left:2px}
+.card.open .ei{transform:rotate(180deg)}
 
-  h1 span {
-    color: var(--accent);
-  }
+/* CARD BODY */
+.cbody{display:none;border-top:1px solid var(--bord);padding:13px 13px 13px 13px}
+.card.open .cbody{display:block}
+.nt{font-size:13px;font-weight:600;line-height:1.7;color:#4a4440;margin-bottom:13px}
+.igrid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:8px}
+.ic{background:var(--bg);border:1px solid var(--bord);border-radius:7px;padding:8px 10px}
+.ic-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.ic-v{font-size:12px;font-weight:800;color:var(--text);line-height:1.35}
+.hi-ok  {background:var(--ok-l);border-color:var(--ok-m)}
+.hi-warn{background:var(--warn-l);border-color:var(--warn-m)}
+.hi-no  {background:var(--no-l);border-color:var(--no-m)}
+.hi-ok   .ic-l{color:var(--ok-t)}
+.hi-warn .ic-l{color:var(--warn-t)}
+.hi-no   .ic-l{color:var(--no-t)}
+.chn{border-radius:7px;padding:8px 10px;font-size:12px;font-weight:700;line-height:1.5;margin-bottom:5px}
+.chn-cbbc {background:var(--cbbc-green-l);border:1px solid var(--cbbc-green-b);color:#004d26}
+.chn-cbeeb{background:var(--cbeeb-yellow-l);border:1px solid var(--cbeeb-yellow-b);color:#4a3800}
+.chn-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;margin-bottom:2px;opacity:.65}
+.ali{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.ali-l{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;flex-shrink:0}
+.ac{font-size:11px;font-weight:700;background:#f0ece6;border:1px solid var(--bord);border-radius:4px;padding:2px 7px;color:var(--text)}
 
-  .subtitle {
-    color: var(--muted);
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 1.6;
-    max-width: 520px;
-  }
+/* EMPTY */
+.empty{text-align:center;padding:46px 16px}
+.ei2{font-size:42px;margin-bottom:12px}
+.empty h3{font-size:17px;font-weight:900;margin-bottom:8px}
+.empty p{font-size:13px;font-weight:600;color:var(--muted);max-width:310px;margin:0 auto;line-height:1.6}
 
-  /* Legend */
-  .legend {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 32px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-  }
-
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .dot-green { background: var(--green); box-shadow: 0 0 8px var(--green); }
-  .dot-orange { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
-  .dot-red { background: var(--red); box-shadow: 0 0 8px var(--red); }
-
-  /* Search */
-  .search-wrapper {
-    position: relative;
-    margin-bottom: 8px;
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-    width: 18px;
-    height: 18px;
-    pointer-events: none;
-  }
-
-  #search {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 18px 18px 18px 50px;
-    font-family: 'Syne', sans-serif;
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    letter-spacing: -0.01em;
-  }
-
-  #search::placeholder { color: var(--muted); font-weight: 400; }
-
-  #search:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(78,124,255,0.12);
-  }
-
-  .hint {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    padding: 6px 4px;
-    letter-spacing: 0.06em;
-  }
-
-  /* Filter tabs */
-  .filters {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-
-  .filter-btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 7px 14px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
-
-  .filter-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-  }
-
-  .filter-btn.active-green { background: var(--green); border-color: var(--green); color: #000; }
-  .filter-btn.active-orange { background: var(--orange); border-color: var(--orange); color: #000; }
-  .filter-btn.active-red { background: var(--red); border-color: var(--red); color: #fff; }
-
-  /* Results */
-  #results {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .result-card {
-    background: var(--surface);
-    border-radius: 8px;
-    padding: 18px 20px;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    animation: slideIn 0.2s ease both;
-    position: relative;
-    overflow: hidden;
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .result-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    border-radius: 8px 0 0 8px;
-  }
-
-  .result-card.green { border: 1px solid var(--green-border); background: var(--green-bg); }
-  .result-card.green::before { background: var(--green); }
-  .result-card.orange { border: 1px solid var(--orange-border); background: var(--orange-bg); }
-  .result-card.orange::before { background: var(--orange); }
-  .result-card.red { border: 1px solid var(--red-border); background: var(--red-bg); }
-  .result-card.red::before { background: var(--red); }
-
-  .result-card:hover { transform: translateX(3px); }
-
-  .card-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 6px;
-  }
-
-  .credit-title {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--text);
-    flex: 1;
-  }
-
-  .status-badge {
-    flex-shrink: 0;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 3px;
-    font-weight: 500;
-  }
-
-  .green .status-badge { background: rgba(0,232,122,0.15); color: var(--green); border: 1px solid var(--green-border); }
-  .orange .status-badge { background: rgba(255,140,0,0.15); color: var(--orange); border: 1px solid var(--orange-border); }
-  .red .status-badge { background: rgba(255,60,90,0.15); color: var(--red); border: 1px solid var(--red-border); }
-
-  .credit-category {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-  }
-
-  .credit-note {
-    font-size: 13px;
-    line-height: 1.6;
-    color: #a0a0c0;
-    display: none;
-  }
-
-  .result-card.expanded .credit-note { display: block; }
-
-  .timing-row {
-    display: flex;
-    gap: 16px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
-
-  .timing-chip {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 3px 9px;
-  }
-
-  .expand-hint {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    margin-top: 8px;
-    opacity: 0.6;
-  }
-
-  .result-card.expanded .expand-hint { display: none; }
-
-  /* Empty / welcome state */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
-
-  .empty-state .big-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    opacity: 0.4;
-  }
-
-  .empty-state h3 {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
-
-  .empty-state p {
-    font-size: 14px;
-    line-height: 1.6;
-    max-width: 360px;
-    margin: 0 auto;
-  }
-
-  /* Section divider */
-  .section-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 4px 0 8px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 8px;
-    margin-top: 16px;
-  }
-
-  .result-count {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    text-align: right;
-    padding: 8px 0 16px;
-    letter-spacing: 0.06em;
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* RESPONSIVE */
+@media(max-width:460px){
+  .legend{grid-template-columns:1fr;gap:5px}
+  .lc{display:flex;align-items:center;gap:10px;padding:10px 12px}
+  .lt{margin-bottom:0;flex-shrink:0}
+  .ldesc{display:none}
+  .igrid{grid-template-columns:1fr}
+}
+@media(max-width:360px){
+  .chb{padding:3px 7px;font-size:10px}
+  .topbar-label{display:none}
+}
 </style>
 </head>
 <body>
-<div class="container">
 
-  <header>
-    <div class="bbc-badge">BBC Commissioning Guidelines</div>
-    <h1>Credits <span>Checker</span></h1>
-    <p class="subtitle">Search any credit title to instantly check BBC compliance status for independent studio productions.</p>
-  </header>
+<div class="topbar">
+  <div class="bbc-logo"><span>B</span><span>B</span><span>C</span></div>
+  <div class="topbar-label">Children's Credits Checker</div>
+  <div class="ch-sw" id="chsw">
+    <button class="chb a-all"  data-ch="all">Both</button>
+    <button class="chb"        data-ch="cbbc">CBBC</button>
+    <button class="chb"        data-ch="cbeeb">CBeebies</button>
+  </div>
+</div>
 
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot dot-green"></div> Approved — use freely</div>
-    <div class="legend-item"><div class="legend-dot dot-orange"></div> Exec discretion — needs approval</div>
-    <div class="legend-item"><div class="legend-dot dot-red"></div> Not permitted by BBC</div>
+<div class="hero">
+  <div class="hero-in">
+    <div class="ch-badges">
+      <span class="chbadge cbbc-badge"><span class="cbadge-dot"></span>CBBC</span>
+      <span class="chbadge cbeeb-badge"><span class="cbadge-dot"></span>CBeebies</span>
+    </div>
+    <h1>Credits <span class="hg">checker</span><br>for <span class="hy">Children's</span> BBC</h1>
+    <p class="hero-sub">Search any credit against the official BBC Opening &amp; Closing Credits guidelines (reviewed February 2015). Built for independent studios.</p>
+    <div class="sw">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search" placeholder="e.g. Executive Producer, Narrator, Stunt…" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="tips">try: "exec" · "writer" · "DoP" · "sound" · "sponsor" · "showrunner"</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="legend" id="leg">
+    <div class="lc" onclick="togStat('ok',this)"><div class="lt"><div class="ld ld-ok"></div><div class="ln">✓ Approved</div></div><div class="ldesc">Listed in the BBC guidelines — use as specified</div></div>
+    <div class="lc" onclick="togStat('warn',this)"><div class="lt"><div class="ld ld-warn"></div><div class="ln">⚠ Exec Discretion</div></div><div class="ldesc">Needs BBC commissioning exec sign-off</div></div>
+    <div class="lc" onclick="togStat('no',this)"><div class="lt"><div class="ld ld-no"></div><div class="ln">✗ Not Permitted</div></div><div class="ldesc">Not in the guidelines — do not use</div></div>
   </div>
 
-  <div class="search-wrapper">
-    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-    </svg>
-    <input type="text" id="search" placeholder="Type a credit title e.g. 'Executive Producer'…" autocomplete="off" autocorrect="off" spellcheck="false">
+  <div class="frow">
+    <span class="flabel">Position:</span>
+    <button class="fb on" data-pos="all"     onclick="setPos('all',this)">All</button>
+    <button class="fb"    data-pos="opening" onclick="setPos('opening',this)">Opening only</button>
+    <button class="fb"    data-pos="closing" onclick="setPos('closing',this)">Closing only</button>
   </div>
-  <div class="hint">↵ click any result for full guidance notes</div>
 
-  <div class="filters" id="filters">
-    <button class="filter-btn active" data-filter="all">All Credits</button>
-    <button class="filter-btn" data-filter="green">✓ Approved</button>
-    <button class="filter-btn" data-filter="orange">⚠ Exec Discretion</button>
-    <button class="filter-btn" data-filter="red">✗ Not Permitted</button>
-  </div>
+  <div class="disc">⚠️ <strong>Always confirm with your BBC commissioning executive.</strong> This tool is based on the BBC's February 2015 Opening &amp; Closing Credits guidelines. Individual commissions may have requirements agreed separately.</div>
 
   <div id="results"></div>
-
 </div>
 
 <script>
-const CREDITS = [
-  // ─── OPENING CREDITS ───────────────────────────────────────────
-  {
-    title: "Executive Producer",
-    aliases: ["Exec Producer", "Executive Prod", "EP"],
-    category: "Opening Credits — Production",
-    status: "green",
-    note: "Standard approved credit. Must appear in opening titles. Only one Executive Producer credit permitted in the opening unless agreed otherwise with the BBC commissioning executive. The BBC's own exec producer credit must also appear if applicable.",
-    timing: "Opening titles",
-    position: "Opening"
-  },
-  {
-    title: "Producer",
-    aliases: ["Series Producer", "Prod"],
-    category: "Opening Credits — Production",
-    status: "green",
-    note: "Standard approved credit for the lead producer. Series Producer is also acceptable. Must be clearly linked to one individual. Cannot be used for more than one individual without exec agreement.",
-    timing: "Opening titles",
-    position: "Opening"
-  },
-  {
-    title: "Director",
-    aliases: ["Series Director", "Dir"],
-    category: "Opening Credits — Production",
-    status: "green",
-    note: "Standard approved credit. For episodic drama or multi-director projects, the credited director should be the primary director for that episode.",
-    timing: "Opening titles",
-    position: "Opening"
-  },
-  {
-    title: "Co-Executive Producer",
-    aliases: ["Co-Exec Producer", "Co-EP"],
-    category: "Opening Credits — Production",
-    status: "orange",
-    note: "Requires agreement with the BBC commissioning executive. The number and use of Co-Executive Producer credits must be justified. Over-inflation of credits at this level is not in line with BBC policy.",
-    timing: "Opening titles",
-    position: "Opening"
-  },
-  {
-    title: "Produced by",
-    aliases: [],
-    category: "Opening Credits — Presentation",
-    status: "green",
-    note: "Acceptable alternative presentation format to 'Producer'. Typically used as a card rather than inline text.",
-    timing: "Opening titles",
-    position: "Opening"
-  },
-  {
-    title: "A [Company Name] Production",
-    aliases: ["A production by", "Production company card"],
-    category: "Opening Credits — Company",
-    status: "green",
-    note: "Standard independent production company credit. Permitted in opening titles. Logo cards are also permitted under current BBC guidelines.",
-    timing: "Opening or closing titles",
-    position: "Opening"
-  },
-  {
-    title: "In association with",
-    aliases: ["In Association With"],
-    category: "Opening Credits — Co-Production",
-    status: "orange",
-    note: "Co-production and co-financing credits require specific sign-off from the BBC commissioning executive. Wording, positioning and logo usage must all be agreed in advance. BBC brand prominence must not be diminished.",
-    timing: "Opening or closing titles",
-    position: "Opening"
-  },
-  {
-    title: "Developed by",
-    aliases: ["Development credit", "Created and developed by"],
-    category: "Opening Credits — Development",
-    status: "orange",
-    note: "Development credits are not standard and require commissioning executive approval. If agreed, must be positioned so it does not imply creative editorial control over the BBC.",
-    timing: "Opening titles",
-    position: "Opening"
-  },
-  {
-    title: "Created by",
-    aliases: ["Creator", "Original concept by"],
-    category: "Opening Credits — Creative",
-    status: "green",
-    note: "Permitted where a writer or creator has originated the concept. Standard in drama. Must refer to an individual, not a company. In factual, use only where genuinely applicable.",
-    timing: "Opening titles",
-    position: "Opening"
-  },
-  {
-    title: "Written by",
-    aliases: ["Writer", "Screenplay by", "Script by"],
-    category: "Opening Credits — Writing",
-    status: "green",
-    note: "Standard approved credit for drama and scripted content. Must accurately reflect writing contribution. 'Screenplay by' and 'Script by' are acceptable variants.",
-    timing: "Opening titles",
-    position: "Opening"
-  },
-  {
-    title: "Presenter",
-    aliases: ["Presented by", "Host"],
-    category: "Opening Credits — Talent",
-    status: "green",
-    note: "Standard approved credit for on-screen presenters. 'Presented by' is an acceptable alternative. Should only appear where the individual is the primary on-screen presenter.",
-    timing: "Opening titles",
-    position: "Opening"
-  },
-
-  // ─── CLOSING CREDITS ───────────────────────────────────────────
-  {
-    title: "Camera Operator",
-    aliases: ["Cameraman", "Camera"],
-    category: "Closing Credits — Camera",
-    status: "green",
-    note: "Standard approved closing credit. 'Camera Operator' is the preferred BBC-compliant term. 'Cameraman' is acceptable but 'Camera' alone is insufficient.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Director of Photography",
-    aliases: ["DOP", "DoP", "Cinematographer", "DP"],
-    category: "Closing Credits — Camera",
-    status: "green",
-    note: "Standard approved credit. 'Director of Photography' or 'DoP' are both acceptable. Used for single-camera drama and high-end factual.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Editor",
-    aliases: ["Series Editor", "Film Editor", "Edited by"],
-    category: "Closing Credits — Post Production",
-    status: "green",
-    note: "Standard approved credit. 'Edited by' is also acceptable. Do not confuse with the editorial role of Series Editor (journalism/documentary) which carries different meaning.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Series Editor",
-    aliases: [],
-    category: "Closing Credits — Editorial",
-    status: "orange",
-    note: "Can mean either a post-production editor working across a series, OR an editorial/commissioning-adjacent role (e.g. in documentary journalism). Context must be clear. BBC commissioning exec should confirm usage to avoid confusion with editorial oversight roles.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Production Manager",
-    aliases: ["PM"],
-    category: "Closing Credits — Production",
-    status: "green",
-    note: "Standard approved credit. Should reflect the individual managing day-to-day production logistics.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Line Producer",
-    aliases: [],
-    category: "Closing Credits — Production",
-    status: "green",
-    note: "Standard approved credit for the individual managing the physical production budget and schedule on behalf of the producer.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Production Coordinator",
-    aliases: ["Prod Co-ordinator", "Prod Coordinator"],
-    category: "Closing Credits — Production",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Assistant Producer",
-    aliases: ["AP"],
-    category: "Closing Credits — Production",
-    status: "green",
-    note: "Standard approved credit. Widely used in factual and entertainment.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Researcher",
-    aliases: ["Research"],
-    category: "Closing Credits — Production",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Sound Recordist",
-    aliases: ["Sound", "Location Sound"],
-    category: "Closing Credits — Sound",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Sound Designer",
-    aliases: [],
-    category: "Closing Credits — Sound",
-    status: "green",
-    note: "Standard approved credit, typically for drama and high-end factual.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Dubbing Mixer",
-    aliases: ["Re-recording Mixer", "Mix"],
-    category: "Closing Credits — Post Production",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Composer",
-    aliases: ["Music by", "Original Music by", "Original Score by"],
-    category: "Closing Credits — Music",
-    status: "green",
-    note: "Standard approved credit. 'Music by' and 'Original Music by' are acceptable variants.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Casting Director",
-    aliases: ["Casting", "Casting by"],
-    category: "Closing Credits — Drama",
-    status: "green",
-    note: "Standard approved credit for drama productions.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Production Designer",
-    aliases: ["Designer"],
-    category: "Closing Credits — Design",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Art Director",
-    aliases: [],
-    category: "Closing Credits — Design",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Costume Designer",
-    aliases: ["Wardrobe", "Wardrobe Designer", "Costume"],
-    category: "Closing Credits — Design",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Make-up Designer",
-    aliases: ["Hair and Make-up", "Make Up Designer", "Makeup Designer"],
-    category: "Closing Credits — Design",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "VFX Supervisor",
-    aliases: ["Visual Effects Supervisor", "VFX"],
-    category: "Closing Credits — Post Production",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Colourist",
-    aliases: ["Colorist", "Colour Grade", "Grade"],
-    category: "Closing Credits — Post Production",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Online Editor",
-    aliases: ["Conform Editor", "Online"],
-    category: "Closing Credits — Post Production",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-
-  // ─── NOT PERMITTED ──────────────────────────────────────────────
-  {
-    title: "Sponsored by",
-    aliases: ["Sponsor", "Sponsored content"],
-    category: "Not Permitted — Commercial",
-    status: "red",
-    note: "BBC programmes cannot carry sponsorship credits of any kind. The BBC does not accept advertising or sponsorship. This credit must not appear anywhere in a BBC production.",
-    timing: "N/A",
-    position: "Any"
-  },
-  {
-    title: "Funded by",
-    aliases: ["With funding from", "Financial support from"],
-    category: "Not Permitted — Commercial",
-    status: "red",
-    note: "Credits implying external commercial funding are not permitted on BBC commissions. If an international co-producer or pre-sale has contributed funding, this must be handled through agreed co-production credits — not 'funded by' language.",
-    timing: "N/A",
-    position: "Any"
-  },
-  {
-    title: "Presented in association with [Brand]",
-    aliases: ["Brand partnership", "With support from"],
-    category: "Not Permitted — Commercial",
-    status: "red",
-    note: "Any credit implying brand association with the presentation of the programme is not permitted. The BBC maintains editorial independence and cannot be associated with commercial brand partnerships in this way.",
-    timing: "N/A",
-    position: "Any"
-  },
-  {
-    title: "A [Brand] Original",
-    aliases: ["Brand original", "Exclusive to"],
-    category: "Not Permitted — Commercial",
-    status: "red",
-    note: "Credits that imply the programme is an 'original' of any commercial brand (streaming or otherwise) are not permitted on BBC commissions, as these undermine the BBC's own branding and commissioning identity.",
-    timing: "N/A",
-    position: "Any"
-  },
-  {
-    title: "Head Writer",
-    aliases: [],
-    category: "Not Standard — Writing",
-    status: "red",
-    note: "Not a recognised BBC credit. 'Lead Writer' or 'Writing Team' may be discussed with the exec, but 'Head Writer' implies a hierarchical writing structure that BBC credits do not formally recognise. Discuss alternatives with your commissioning executive.",
-    timing: "N/A",
-    position: "Any"
-  },
-  {
-    title: "Showrunner",
-    aliases: ["Show Runner"],
-    category: "Not Standard — Creative",
-    status: "red",
-    note: "Not a recognised BBC credit. This is an American TV industry term with no formal equivalent in BBC credits. The roles are typically covered by 'Executive Producer' and 'Lead Writer' / 'Created by'. Discuss with your commissioning executive.",
-    timing: "N/A",
-    position: "Any"
-  },
-  {
-    title: "Digital Producer",
-    aliases: ["Online Producer", "Social Media Producer"],
-    category: "Not Standard — Digital",
-    status: "red",
-    note: "Not a standard credit within broadcast programme credits. Digital/social roles may be credited internally but do not appear in on-screen programme credits under current BBC guidelines.",
-    timing: "N/A",
-    position: "Any"
-  },
-
-  // ─── FURTHER ORANGE ────────────────────────────────────────────
-  {
-    title: "Consulting Producer",
-    aliases: ["Consultant Producer"],
-    category: "Closing Credits — Production",
-    status: "orange",
-    note: "Requires agreement with the BBC commissioning executive. Must reflect a genuine and significant creative or editorial contribution, not simply a courtesy credit. The BBC is cautious about credit inflation at producer level.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Supervising Producer",
-    aliases: [],
-    category: "Closing Credits — Production",
-    status: "orange",
-    note: "Requires agreement with the commissioning executive. Must be clearly distinguished from the lead Producer credit and reflect genuine line management or editorial supervision of other producers.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Creative Director",
-    aliases: [],
-    category: "Opening or Closing Credits",
-    status: "orange",
-    note: "Not a standard BBC credit. If used, must be agreed with the commissioning executive and must not be positioned in a way that suggests editorial authority over the BBC's own commissioning decisions.",
-    timing: "Closing credits",
-    position: "Any"
-  },
-  {
-    title: "A [Company] / [Company] Co-Production",
-    aliases: ["Co-Production", "Co Production"],
-    category: "Opening or Closing Credits",
-    status: "orange",
-    note: "Co-production credits require full agreement with the BBC commissioning executive. Exact wording, logo usage and placement must all be approved. Any co-producer credit must not diminish the prominence of the BBC.",
-    timing: "Agreed placement",
-    position: "Any"
-  },
-  {
-    title: "Stunt Coordinator",
-    aliases: ["Stunt Supervisor", "Stunts"],
-    category: "Closing Credits — Drama",
-    status: "green",
-    note: "Standard approved credit for drama productions involving stunt work.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Script Editor",
-    aliases: ["Script Supervisor"],
-    category: "Closing Credits — Drama",
-    status: "green",
-    note: "Standard approved credit. 'Script Supervisor' refers to continuity on set and is a separate, equally valid credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Runner",
-    aliases: [],
-    category: "Closing Credits — Production",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Titles by",
-    aliases: ["Titles Design", "Title Sequence"],
-    category: "Closing Credits — Post Production",
-    status: "green",
-    note: "Standard approved credit for title sequence designers/companies.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "With thanks to",
-    aliases: ["Special thanks", "Thanks to"],
-    category: "Closing Credits — Acknowledgements",
-    status: "orange",
-    note: "Courtesy credits require commissioning executive approval. Must not imply commercial endorsement or association. The BBC is cautious about courtesy credits for organisations that could be seen as sponsors.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "In memory of",
-    aliases: ["Dedicated to", "Dedication"],
-    category: "Closing Credits — Dedication",
-    status: "orange",
-    note: "Dedication cards are permitted but must be agreed with the commissioning executive. Should be for a genuine individual connected to the production. Wording and placement must be approved.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Location Manager",
-    aliases: ["Locations Manager"],
-    category: "Closing Credits — Locations",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Production Accountant",
-    aliases: ["Accountant"],
-    category: "Closing Credits — Production",
-    status: "green",
-    note: "Standard approved credit.",
-    timing: "Closing credits",
-    position: "Closing"
-  },
-  {
-    title: "Legal Counsel",
-    aliases: [],
-    category: "Closing Credits — Legal",
-    status: "red",
-    note: "Not a standard on-screen programme credit. Legal and business affairs roles are not credited in BBC programme credits. This would be unusual and is not BBC practice.",
-    timing: "N/A",
-    position: "Any"
-  },
-  {
-    title: "Title Music by",
-    aliases: ["Theme Music by"],
-    category: "Closing Credits — Music",
-    status: "green",
-    note: "Standard approved credit when a specific theme tune has been composed for the series.",
-    timing: "Closing credits",
-    position: "Closing"
-  }
+const D=[
+  // OPENING — TALENT
+  {t:"Starring",a:["Main cast","Cast"],c:"Opening — Performers",s:"ok",p:"opening",ch:"both",n:"Approved for main characters only in opening titles. Full cast listing goes in closing credits.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening — main characters only"},
+  {t:"Presented by / Presenter",a:["Presented by","Presenter","Host"],c:"Opening — Talent",s:"ok",p:"opening",ch:"both",n:"Standard approved credit. Can appear in both opening and closing credits.",tm:"Opening or closing titles",dur:"Min. 3 sec per card in opening",pl:"Opening titles — near top of sequence"},
+  {t:"Introduced by",a:[],c:"Opening — Talent",s:"ok",p:"opening",ch:"both",n:"Approved alternative to 'Presented by'. Can appear in opening or closing credits.",tm:"Opening or closing titles",dur:"Min. 3 sec per card",pl:"Opening titles"},
+  {t:"Narrated by / Narrator",a:["Narrated by","Narrator","Narration by"],c:"Opening — Talent",s:"ok",p:"opening",ch:"both",n:"Standard approved credit. Can appear in opening or closing credits.",tm:"Opening or closing titles",dur:"Min. 3 sec per card",pl:"Opening titles"},
+  {t:"Commentary by / Commentator",a:["Commentary by","Commentator"],c:"Opening — Talent",s:"ok",p:"opening",ch:"both",n:"Approved credit for opening or closing titles.",tm:"Opening or closing titles",dur:"Min. 3 sec per card",pl:"Opening or closing titles"},
+  // OPENING — WRITERS
+  {t:"Written by / Writer",a:["Written by","Writer"],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Standard approved credit for scripted programmes. Can also appear in closing credits if not already used in opening.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening — typically with Director credit"},
+  {t:"Screenplay by",a:[],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Approved variant of 'Written by' for drama.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening titles"},
+  {t:"Adapted by",a:[],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Approved credit for adaptations. Can appear in opening or closing credits.",tm:"Opening or closing titles",dur:"Min. 3 sec per card",pl:"Opening or closing titles"},
+  {t:"Series created by / Series creator",a:["Series created by","Series creator","Created by"],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Approved credit for the originator of the series concept. Must be a named individual.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening — near top of sequence"},
+  {t:"Series devised by / Series deviser",a:["Series devised by","Series deviser","Devised by"],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Approved alternative to 'Series created by'. 'Devised by / Deviser' is also an approved variant for non-series content.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening titles"},
+  {t:"Format devised by",a:[],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Approved credit where a specific format is being licensed or credited.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening titles"},
+  {t:"Based on the book by",a:["Based on the novel by","Based on the story by"],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Approved credit for adaptations from published works.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening titles"},
+  {t:"Based on an original idea by",a:["From an idea by"],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Approved credit. 'From an idea by' is an approved shorter variant.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening titles"},
+  {t:"Dramatised by",a:[],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Approved credit for drama adaptations.",tm:"Opening or closing titles",dur:"Min. 3 sec per card",pl:"Opening titles"},
+  {t:"By",a:[],c:"Opening — Writing",s:"ok",p:"opening",ch:"both",n:"Approved minimal credit, typically for single-authored works.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening titles"},
+  // OPENING — PRODUCTION
+  {t:"Producer / Produced by",a:["Producer","Produced by","Series Producer"],c:"Opening — Production",s:"ok",p:"opening",ch:"both",n:"Standard approved credit. 'Series Producer' is also acceptable. Only one lead producer credit should appear in the opening unless agreed with the BBC exec.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening — usually with or just after Director"},
+  {t:"Director / Directed by",a:["Director","Directed by"],c:"Opening — Production",s:"ok",p:"opening",ch:"both",n:"Standard approved credit. For multi-director series, the credited director is the principal director of that episode.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening — typically the final credit card"},
+  {t:"Executive Producer",a:["Exec Producer","Exec","EP","Executive Prod"],c:"Opening — Production",s:"ok",p:"opening",ch:"both",n:"Approved, but the BBC guidelines specifically label this 'Executive Producer (for BBC)' — meaning the BBC Children's commissioning executive credit must appear alongside the indie EP. Only one EP credit per side unless the exec has agreed otherwise in writing.",tm:"Opening titles",dur:"Min. 3 sec per card",pl:"Opening — typically the final or second-to-last card",cbbc:"BBC Children's commissioning exec credit is mandatory and must not be subordinated to the indie EP.",cbeeb:"Same rule for CBeebies. Commissioning exec credit must appear with indie EP."},
+  // NOT PERMITTED IN OPENING
+  {t:"BBC ONE presents / CBBC presents",a:["BBC presents","BBC Two presents","CBeebies presents","Channel presents"],c:"Opening — PROHIBITED",s:"no",p:"opening",ch:"both",n:"Explicitly prohibited by the BBC guidelines: 'Opening credits may not credit the commissioning channel (e.g. \"BBC ONE presents…\")'. This applies to all BBC channels — CBBC, CBeebies, BBC One, BBC Two etc.",tm:"Never permitted",dur:"N/A",pl:"N/A"},
+  // CLOSING — PERFORMERS
+  {t:"Cast / Performers",a:["Cast","Performers","In order of appearance"],c:"Closing — Performers",s:"ok",p:"closing",ch:"both",n:"Standard closing credit for full cast listing. 'Cast/Performers (in order of appearance)' is an approved variant.",tm:"Closing credits",dur:"Scrolling — each name min. 2 sec",pl:"Closing credits — typically first section"},
+  {t:"Guests / Panellists / Participants",a:["Guests","Panellists","Panelists","Participants","Guest"],c:"Closing — Performers",s:"ok",p:"closing",ch:"both",n:"Approved for non-drama formats: game shows, panel shows, magazine programmes.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Reconstruction Cast",a:["Drama reconstruction"],c:"Closing — Performers",s:"ok",p:"closing",ch:"both",n:"Approved for drama documentaries only, and only where the dramatic reconstruction is substantive and includes speaking roles.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — drama documentary only"},
+  // CLOSING — ADVISERS
+  {t:"Adviser(s) / Programme Adviser(s)",a:["Adviser","Advisor","Programme Adviser","Historical Adviser","Medical Consultant","Technical Adviser"],c:"Closing — Advice & Consultants",s:"ok",p:"closing",ch:"both",n:"Approved. Subject-specific variants are also approved: 'Historical Adviser', 'Medical Consultant', 'Technical Adviser(s)'.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — adviser section"},
+  {t:"Consultant(s) / Series Consultant(s)",a:["Consultant","Programme Consultant","Series Consultant"],c:"Closing — Advice & Consultants",s:"ok",p:"closing",ch:"both",n:"Approved credit and approved variants.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — COMBINED
+  {t:"Produced and Directed by",a:["Produced & Directed by","Written and Directed by","Adapted and Directed by","Devised and Produced by","Directed and Edited by"],c:"Closing — Combined Credits",s:"ok",p:"closing",ch:"both",n:"Approved combined credits include: 'Adapted and Directed by', 'Devised and Produced by', 'Directed and Edited by', 'Narrated and Produced by', 'Produced and Directed by', 'Written and Directed by', 'Written and Narrated by', 'Written and Produced by'.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — CAMERA
+  {t:"Camera Operator",a:["Camera Op","Cameraman","Camera","Cameras"],c:"Closing — Camera",s:"ok",p:"closing",ch:"both",n:"'Camera Operator' is the preferred BBC-compliant term. 'Camera(s)' is also listed as approved. 'Film Camera' approved for film productions.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — camera section"},
+  {t:"Director of Photography",a:["DoP","DOP","DP","Cinematographer"],c:"Closing — Camera",s:"ok",p:"closing",ch:"both",n:"Approved 'for major productions'. For standard children's productions 'Camera Operator' or 'Photography' may be more appropriate.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — camera section"},
+  {t:"Focus Puller",a:["Camera Assistant","1st AC"],c:"Closing — Camera",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Clapper Loader",a:["2nd AC"],c:"Closing — Camera",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Steadicam Operator",a:["Steadicam"],c:"Closing — Camera",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Grip",a:["Key Grip"],c:"Closing — Camera",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Aerial Photography",a:["Aerial Camera","Drone Operator"],c:"Closing — Camera",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Camera Supervisor",a:[],c:"Closing — Camera",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Outside Broadcast Cameras",a:["OB Cameras","OB Camera"],c:"Closing — Camera",s:"ok",p:"closing",ch:"both",n:"Listed as 'Outside Broadcast / OB Cameras' in the guidelines.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — COSTUME
+  {t:"Costume Designer",a:["Costume Design","Costumes","Wardrobe"],c:"Closing — Costume",s:"ok",p:"closing",ch:"both",n:"'Costume Design / Designer', 'Costumes', 'Dresser', and 'Wardrobe' are all approved.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — DESIGN
+  {t:"Production Designer",a:["Production Design","Designer","Design","Designed by"],c:"Closing — Design",s:"ok",p:"closing",ch:"both",n:"'Design / Production Design(er)', 'Designed by / Designer' are all approved variants.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Art Director",a:[],c:"Closing — Design",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Assistant Art Director",a:[],c:"Closing — Design",s:"ok",p:"closing",ch:"both",n:"Approved for major productions only.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — major productions only"},
+  {t:"Props Buyer / Property Master",a:["Props Buyer","Property Buyer","Properties","Props","Property Master"],c:"Closing — Design",s:"ok",p:"closing",ch:"both",n:"'Properties / Props Buyer' and 'Properties / Property Master' are both approved.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Set Designer(s)",a:["Set Designer"],c:"Closing — Design",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Production Buyer",a:[],c:"Closing — Design",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Graphic Design / Designer / Graphics",a:["Graphic Design","Graphic Designer","Graphics","Motion Graphics"],c:"Closing — Graphics",s:"ok",p:"closing",ch:"both",n:"'Graphic Design / Designer / Graphics' and 'Opening Titles' (for title sequence designers) are all approved.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Opening Titles",a:["Title Design","Title Sequence","Titles by","Titles"],c:"Closing — Graphics",s:"ok",p:"closing",ch:"both",n:"Approved credit for designers of the opening title sequence.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — FLOOR & STUDIO
+  {t:"Floor Manager(s)",a:["Floor Manager","FM"],c:"Closing — Floor & Studio",s:"ok",p:"closing",ch:"both",n:"Approved credit. 'Assistant Floor Manager' and 'Stage Manager' are also approved.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — LIGHTING
+  {t:"Lighting Director",a:["Lighting","Gaffer","Lighting Gaffer","Best Boy"],c:"Closing — Lighting",s:"ok",p:"closing",ch:"both",n:"'Lighting', 'Lighting Director', 'Lighting Gaffer / Gaffer', and 'Best Boy' are all approved.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — MAKE-UP
+  {t:"Make-up Design / Designer",a:["Make-up Designer","Makeup Designer","Make Up Artist","Hair and Make-up","Make-up Artist"],c:"Closing — Make-up",s:"ok",p:"closing",ch:"both",n:"'Make-up (/ Hair)', 'Make-up Artist', and 'Make-up Design' are all approved variants.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — POST PRODUCTION
+  {t:"Film Editor / Picture Editor",a:["Film Editor","Picture Editor","Editor","Edited by","Video Editor","Off-line Editor","Online Editor"],c:"Closing — Post Production",s:"ok",p:"closing",ch:"both",n:"Multiple variants approved: 'Film Editor / Editing', 'Picture Editor / Editing', 'Video Editor / Editing', 'Off-line Editor / Editing', 'On-line Editor / Editing'. Use the most appropriate for your production type.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — post-production section"},
+  {t:"Dubbing Mixer",a:["Re-recording Mixer","Mix Engineer","Sound Mix"],c:"Closing — Post Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Dubbing Editor",a:["Assistant Dubbing Editor"],c:"Closing — Post Production",s:"ok",p:"closing",ch:"both",n:"Both 'Dubbing Editor' and 'Assistant Dubbing Editor' are approved.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Colourist",a:["Colorist","Colour Grade","Telecine"],c:"Closing — Post Production",s:"ok",p:"closing",ch:"both",n:"'Colourist' and 'Telecine' are both listed as approved credits.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Post Production Coordinator",a:["Post Coordinator","Post Production Co-ordinator"],c:"Closing — Post Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Visual Effects",a:["VFX","Video Effects","Vision Mixer"],c:"Closing — Post Production",s:"ok",p:"closing",ch:"both",n:"'Visual Effects', 'Video Effects', and 'Vision Mixer' are all approved credits.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Stills Photography",a:["Stills Photographer","Unit Photographer"],c:"Closing — Post Production",s:"ok",p:"closing",ch:"both",n:"Approved only if stills are actually included in the programme.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — only if stills appear in programme"},
+  {t:"Animation",a:["Animation Sequences","Animated by","Animator"],c:"Closing — Animation",s:"ok",p:"closing",ch:"both",n:"Approved as 'Animation (sequences)' — only if animation is significant in the programme.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — only if animation is significant",cbeeb:"Particularly relevant to CBeebies animated productions."},
+  // CLOSING — SOUND
+  {t:"Sound Recordist",a:["Sound","Location Sound","Film Sound","Sound Effects","Studio Sound","Boom Operator"],c:"Closing — Sound",s:"ok",p:"closing",ch:"both",n:"Multiple variants approved: 'Sound', 'Film Sound', 'Location Sound', 'Sound Effects', 'Sound Recordist', 'Sound Supervisor', 'Studio Sound', 'Boom Operator'.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — SPECIAL FX
+  {t:"Special Effects",a:["SFX","Practical Effects"],c:"Closing — Special Effects",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — EDITORIAL & PRODUCTION
+  {t:"Script Editor",a:[],c:"Closing — Editorial & Production",s:"ok",p:"closing",ch:"both",n:"Approved credit for editorial support in scripted productions.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Script Supervisor",a:["Continuity","Continuity Supervisor"],c:"Closing — Editorial & Production",s:"ok",p:"closing",ch:"both",n:"Approved credit for on-set continuity. Distinct from Script Editor.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Story Editor",a:[],c:"Closing — Editorial & Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Deputy Editor",a:[],c:"Closing — Editorial & Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Series Editor",a:[],c:"Closing — Editorial & Production",s:"warn",p:"closing",ch:"both",n:"Listed in the guidelines, but needs care. 'Series Editor' can mean either (a) a post-production editor across a series, or (b) an editorial/commissioning-adjacent role. The second meaning is sensitive as it can imply shared editorial authority with the BBC. Confirm intended usage with your BBC commissioning executive before including.",tm:"Closing credits if agreed",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Assistant Director",a:["1st AD","2nd AD","3rd AD","First AD","AD"],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved as 'Assistant Director (including 1st, 2nd, 3rd) [for major productions]'.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — major productions"},
+  {t:"Assistant Producer",a:["AP"],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Standard approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Associate Producer",a:[],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit. Distinct from 'Co-Producer'.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Co-Producer",a:["Co Producer"],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved closing credit. Must accurately reflect the co-production relationship.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Casting",a:["Casting Director","Casting by"],c:"Closing — Production",s:"ok",p:"closing",ch:"cbbc",n:"Approved as 'Casting' or 'Casting (Director) [for major productions]'.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits",cbbc:"Primarily relevant to CBBC scripted and drama productions."},
+  {t:"Location Manager",a:["Locations Manager","Locations"],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Production Manager",a:["PM","Prod Manager"],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Production Coordinator",a:["Prod Coordinator","Prod Co-ordinator"],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Production Accountant",a:["Accountant"],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Production Assistant",a:["PA"],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Production Secretary",a:[],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Production Executive",a:[],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved 'for major productions at BBC's discretion'. Confirm appropriateness with your BBC executive.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — major productions / BBC discretion"},
+  {t:"Production Associate",a:["Programme Associate"],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Both 'Production Associate' and 'Programme Associate' are approved.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Production Team",a:[],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved collective credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Unit Manager",a:[],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Series Producer",a:[],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Studio Director",a:[],c:"Closing — Production",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — MUSIC
+  {t:"Composer / Music by",a:["Composer","Music by","Music Composer","Music Composed by","Original Music","Incidental Music"],c:"Closing — Music",s:"ok",p:"closing",ch:"both",n:"Multiple approved variants: 'Composer', 'Music by', 'Music Composed by / Music Composer', 'Incidental Music (by / composed by)', 'Original Music (composed by)'.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — music section"},
+  {t:"Title Music by",a:["Title Music","Theme Music by","Theme Tune","Title Song","Theme by"],c:"Closing — Music",s:"ok",p:"closing",ch:"both",n:"Approved. Variants: 'Title music [name]', 'Title music (composed) by', 'Title song performed by / sung by'.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — music section"},
+  {t:"Musical Director",a:["Music Director","MD","Conductor","Conducted by"],c:"Closing — Music",s:"ok",p:"closing",ch:"both",n:"'Musical Director' and 'Conductor(s) / Conducted by' are both approved.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Music Arranged by",a:["Music Arranger","Arrangements by"],c:"Closing — Music",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Choreography",a:["Choreographer"],c:"Closing — Music",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — RESEARCH
+  {t:"Researcher",a:["Research","Historical Research","Picture Research","Film Research","Contestant Research"],c:"Closing — Research",s:"ok",p:"closing",ch:"both",n:"Approved. Subject-specific variants are approved: 'Historical Research', 'Picture Research', 'Film Research', 'Contestant Research'.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Question Setter",a:[],c:"Closing — Research",s:"ok",p:"closing",ch:"both",n:"Approved credit, relevant to quiz/game show formats.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — JOURNALISM
+  {t:"Reporter",a:["Journalist","Correspondent"],c:"Closing — Journalism",s:"ok",p:"closing",ch:"cbbc",n:"'Correspondent', 'Journalist', and 'Reporter' are all listed as approved credits.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits",cbbc:"Relevant to CBBC news and current affairs content such as Newsround."},
+  // CLOSING — LOCATIONS
+  {t:"Filmed at / in [location]",a:["Filmed at","Filmed in","Location credit"],c:"Closing — Locations",s:"ok",p:"closing",ch:"both",n:"Approved only where the producer judges it would be of genuine interest to the audience and is not apparent within the programme. CRITICAL: Cannot be given in exchange for a waived or reduced facility fee, or any other benefit. Location owners' names, logos or house colours cannot be used.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing — audience interest only, no commercial exchange"},
+  // CLOSING — SPECIALISMS
+  {t:"Stunt Coordinator",a:["Stunt Arranger","Stunts","Stunt Co-ordinator"],c:"Closing — Specialisms",s:"ok",p:"closing",ch:"cbbc",n:"Both 'Stunt Co-ordinator' and 'Stunt Arranger' are listed as approved.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits",cbbc:"Primarily relevant to CBBC live-action drama productions."},
+  {t:"Armourer",a:[],c:"Closing — Specialisms",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Cartoonist",a:[],c:"Closing — Specialisms",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  {t:"Translation",a:["Translation by","Translated by"],c:"Closing — Specialisms",s:"ok",p:"closing",ch:"both",n:"Approved credit.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits"},
+  // CLOSING — WEBSITES
+  {t:"bbc.co.uk / Website credit",a:["bbc.co.uk","Website","Web address"],c:"Closing — Websites",s:"ok",p:"closing",ch:"both",n:"The website should normally be quoted as bbc.co.uk/sitename. The guidelines specifically note that CBBC programmes have special requirements for website credits — confirm the correct URL with your BBC commissioning executive.",tm:"Closing credits",dur:"Scrolling credits",pl:"Closing credits",cbbc:"CBBC programmes have special website credit requirements — confirm exact URL format with your BBC commissioning executive.",cbeeb:"Confirm correct bbc.co.uk URL format with your CBeebies commissioning executive."},
+  // CLOSING — FACILITIES (WARN)
+  {t:"Facilities / Post-house credit",a:["Post House","Studio credit","Facilities","Post Production House"],c:"Closing — Facilities",s:"warn",p:"closing",ch:"both",n:"Only permitted where the facility represents an outstanding creative contribution. The credit may include the individual's name OR the organisation's name, but NOT both. Credits cannot be given in exchange for a waived or reduced fee, or any other benefit. Supply of basic facilities (e.g. studios) does not merit a credit. Confirm with your BBC commissioning executive.",tm:"Closing credits if agreed",dur:"Scrolling credits",pl:"Closing — outstanding creative contribution only"},
+  {t:"With thanks to",a:["Special thanks","Thanks to","The BBC wishes to thank"],c:"Closing — Acknowledgements",s:"warn",p:"closing",ch:"both",n:"Approved credit but must not imply commercial endorsement or sponsorship. 'The BBC wishes to thank' is approved for major productions. The BBC is cautious about thanks credits for any organisations that could be construed as sponsors, brand partners, or advertisers. Confirm with your BBC commissioning executive.",tm:"Closing credits",dur:"Min. 3 sec if on a separate card",pl:"End of closing credits"},
+  {t:"Series Editor",a:[],c:"Closing — Editorial",s:"warn",p:"closing",ch:"both",n:"Listed in the guidelines but needs clarification. 'Series Editor' can mean either a post-production editor across a series, or an editorial/commissioning-adjacent role. The second meaning is sensitive as it implies editorial authority. Confirm the intended meaning and usage with your BBC commissioning executive.",tm:"Closing credits if agreed",dur:"Scrolling credits",pl:"Closing credits"},
+  // NOT PERMITTED
+  {t:"BBC ONE presents / CBBC presents",a:["BBC presents","BBC Two presents","CBeebies presents","Channel presents"],c:"Not Permitted — Opening credits",s:"no",p:"opening",ch:"both",n:"Explicitly prohibited by the BBC guidelines: 'Opening credits may not credit the commissioning channel (e.g. \"BBC ONE presents…\")'. Applies to all BBC channels including CBBC and CBeebies.",tm:"Never permitted",dur:"N/A",pl:"N/A"},
+  {t:"Sponsored by",a:["Sponsor","Sponsored content","With thanks to our sponsor"],c:"Not Permitted — Commercial",s:"no",p:"any",ch:"both",n:"Absolutely not permitted. The BBC does not carry advertising or sponsorship. This must not appear anywhere in the programme or credits.",tm:"Never permitted",dur:"N/A",pl:"N/A"},
+  {t:"Funded by",a:["With funding from","Financial support from","Made possible by"],c:"Not Permitted — Commercial",s:"no",p:"any",ch:"both",n:"Not permitted. Any international co-production or pre-sale funding must be handled through agreed co-production credits, not 'funded by' language.",tm:"Never permitted",dur:"N/A",pl:"N/A"},
+  {t:"Showrunner",a:["Show Runner"],c:"Not Permitted — Not a BBC credit",s:"no",p:"any",ch:"both",n:"Not a recognised BBC credit. This is a US television industry term not listed in the BBC guidelines. The roles are covered by 'Executive Producer' and 'Series Created by'. Would be queried at delivery.",tm:"N/A",dur:"N/A",pl:"N/A"},
+  {t:"Head Writer",a:["Lead Writer"],c:"Not Permitted — Not a BBC credit",s:"no",p:"any",ch:"both",n:"Not listed in the BBC guidelines as a recognised credit. Use 'Written by', 'Series Created by' or 'Devised by' as appropriate.",tm:"N/A",dur:"N/A",pl:"N/A"},
+  {t:"A [Brand] Original",a:["Brand Original","An Original Series","Exclusive Original"],c:"Not Permitted — Commercial",s:"no",p:"any",ch:"both",n:"Not permitted. Credits implying the programme is an 'original' of any commercial brand undermine the BBC's commissioning identity.",tm:"N/A",dur:"N/A",pl:"N/A"},
+  {t:"Social Media Producer",a:["Digital Producer","Online Producer","Content Creator"],c:"Not Permitted — Digital/Social",s:"no",p:"any",ch:"both",n:"Not listed as an on-screen programme credit in the BBC guidelines. Digital and social media roles do not appear in broadcast credit sequences.",tm:"N/A",dur:"N/A",pl:"N/A"},
+  {t:"Legal Counsel",a:["Legal","Business Affairs","Legal Advisor"],c:"Not Permitted — Business",s:"no",p:"any",ch:"both",n:"Not listed as an on-screen programme credit in the BBC guidelines. Legal and business affairs roles are not credited in BBC programme credits.",tm:"N/A",dur:"N/A",pl:"N/A"},
 ];
 
-// State
-let activeFilter = 'all';
-let query = '';
+// De-duplicate (Series Editor appears twice in data above — filter)
+const seen=new Set();
+const DATA=D.filter(c=>{const k=c.t+c.s;if(seen.has(k))return false;seen.add(k);return true});
 
-function normalize(str) {
-  return str.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-}
-
-function matches(credit, q) {
-  if (!q) return true;
-  const n = normalize(q);
-  const fields = [credit.title, ...credit.aliases, credit.category].map(normalize);
-  return fields.some(f => f.includes(n));
-}
-
-function render() {
-  const container = document.getElementById('results');
-  let filtered = CREDITS.filter(c => {
-    const statusOk = activeFilter === 'all' || c.status === activeFilter;
-    const queryOk = matches(c, query);
-    return statusOk && queryOk;
-  });
-
-  if (!query && activeFilter === 'all') {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="big-icon">🎬</div>
-        <h3>Search BBC credits</h3>
-        <p>Type a credit title above to check whether it's approved, needs exec sign-off, or isn't permitted under BBC guidelines.</p>
-      </div>`;
-    return;
-  }
-
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="big-icon">🔍</div>
-        <h3>No credits found</h3>
-        <p>Try different wording, or check the BBC commissioning guidelines directly for specialist credits.</p>
-      </div>`;
-    return;
-  }
-
-  // Group by status for display
-  const groups = [
-    { key: 'green', label: '✓ Approved', items: filtered.filter(c => c.status === 'green') },
-    { key: 'orange', label: '⚠ Exec Discretion Required', items: filtered.filter(c => c.status === 'orange') },
-    { key: 'red', label: '✗ Not Permitted', items: filtered.filter(c => c.status === 'red') },
-  ].filter(g => g.items.length > 0);
-
-  const statusLabels = {
-    green: 'Approved',
-    orange: 'Exec Discretion',
-    red: 'Not Permitted'
-  };
-
-  let html = `<div class="result-count">${filtered.length} credit${filtered.length !== 1 ? 's' : ''} found</div>`;
-
-  for (const group of groups) {
-    if (activeFilter === 'all') {
-      html += `<div class="section-label">${group.label}</div>`;
-    }
-    for (const credit of group.items) {
-      html += `
-        <div class="result-card ${credit.status}" onclick="toggleCard(this)">
-          <div class="card-top">
-            <div class="credit-title">${credit.title}</div>
-            <div class="status-badge">${statusLabels[credit.status]}</div>
-          </div>
-          <div class="credit-category">${credit.category}</div>
-          <div class="credit-note">
-            ${credit.note}
-            <div class="timing-row">
-              <div class="timing-chip">📍 ${credit.timing}</div>
-              ${credit.aliases.length > 0 ? `<div class="timing-chip">Also: ${credit.aliases.join(', ')}</div>` : ''}
-            </div>
-          </div>
-          <div class="expand-hint">↓ click for guidance notes</div>
-        </div>`;
-    }
-  }
-
-  container.innerHTML = html;
-}
-
-function toggleCard(el) {
-  el.classList.toggle('expanded');
-}
-
-// Search input
-document.getElementById('search').addEventListener('input', e => {
-  query = e.target.value;
-  render();
+let Q='',SF=null,PF='all',CF='all';
+const nm=s=>(s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
+const hit=(c,q)=>!q||[c.t,...c.a,c.c].some(f=>nm(f).includes(nm(q)));
+const filt=()=>DATA.filter(c=>{
+  if(SF&&c.s!==SF)return false;
+  if(PF!=='all'&&c.p!=='any'&&c.p!==PF)return false;
+  if(CF==='cbbc' &&c.ch!=='both'&&c.ch!=='cbbc') return false;
+  if(CF==='cbeeb'&&c.ch!=='both'&&c.ch!=='cbeeb')return false;
+  return hit(c,Q);
 });
 
-// Filter buttons
-document.getElementById('filters').addEventListener('click', e => {
-  const btn = e.target.closest('.filter-btn');
-  if (!btn) return;
-  activeFilter = btn.dataset.filter;
+const SM={ok:{lbl:'Approved',pill:'Approved',dc:'ld-ok',cc:'ok'},warn:{lbl:'Exec Discretion',pill:'Exec Discretion',dc:'ld-warn',cc:'warn'},no:{lbl:'Not Permitted',pill:'Not Permitted',dc:'ld-no',cc:'no'}};
+const CHT={both:'<span class="chtag tc-both">CBBC + CBeebies</span>',cbbc:'<span class="chtag tc-cbbc">CBBC</span>',cbeeb:'<span class="chtag tc-cbeeb">CBeebies</span>'};
 
-  document.querySelectorAll('.filter-btn').forEach(b => {
-    b.classList.remove('active', 'active-green', 'active-orange', 'active-red');
+function render(){
+  const el=document.getElementById('results');
+  const list=filt();
+  const empty=!Q&&!SF&&PF==='all'&&CF==='all';
+  if(empty){el.innerHTML=`<div class="empty"><div class="ei2">🎬</div><h3>Search a credit title</h3><p>Type above to check any credit against the BBC Children's guidelines — or tap a status card or filter to browse.</p></div>`;return}
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei2">🔍</div><h3>No credits found</h3><p>Try different wording, or check with your BBC commissioning executive for specialist credits.</p></div>`;return}
+  const grps=['ok','warn','no'].map(s=>({s,items:list.filter(c=>c.s===s)})).filter(g=>g.items.length);
+  let h=`<div class="rmeta">${list.length} credit${list.length!==1?'s':''} found</div>`;
+  let i=0;
+  grps.forEach(g=>{
+    const m=SM[g.s];
+    if(grps.length>1)h+=`<div class="sh"><div class="sh-dot ${m.dc}"></div><div class="sh-lbl">${m.lbl}</div><div class="sh-cnt">${g.items.length}</div></div>`;
+    g.items.forEach(c=>{
+      const m2=SM[c.s];
+      const cn=c.cbbc?`<div class="chn chn-cbbc"><div class="chn-l">CBBC note</div>${c.cbbc}</div>`:'';
+      const cbn=c.cbeeb?`<div class="chn chn-cbeeb"><div class="chn-l">CBeebies note</div>${c.cbeeb}</div>`:'';
+      const al=c.a.length?`<div class="ali"><span class="ali-l">Also:</span>${c.a.map(x=>`<span class="ac">${x}</span>`).join('')}</div>`:'';
+      h+=`<div class="card ${m2.cc}" id="c${i}"><div class="chd" onclick="tog(${i})"><div class="stripe"></div><div class="cm"><div class="ctr"><span class="ctitle">${c.t}</span><span class="sp">${m2.pill}</span>${CHT[c.ch]}</div><div class="ccat">${c.c}</div></div><span class="ei">▾</span></div><div class="cbody"><p class="nt">${c.n}</p><div class="igrid"><div class="ic hi-${c.s}"><div class="ic-l">Status</div><div class="ic-v">${m2.pill}</div></div><div class="ic"><div class="ic-l">Position</div><div class="ic-v">${c.tm}</div></div><div class="ic"><div class="ic-l">Duration</div><div class="ic-v">${c.dur}</div></div><div class="ic"><div class="ic-l">Placement</div><div class="ic-v">${c.pl}</div></div></div>${cn}${cbn}${al}</div></div>`;
+      i++;
+    });
   });
-
-  if (activeFilter === 'all') btn.classList.add('active');
-  else if (activeFilter === 'green') btn.classList.add('active-green');
-  else if (activeFilter === 'orange') btn.classList.add('active-orange');
-  else if (activeFilter === 'red') btn.classList.add('active-red');
-
+  el.innerHTML=h;
+}
+function tog(i){document.getElementById('c'+i).classList.toggle('open')}
+function togStat(s,el){
+  if(SF===s){SF=null;el.classList.remove('s-ok','s-warn','s-no')}
+  else{SF=s;document.querySelectorAll('.lc').forEach(c=>c.classList.remove('s-ok','s-warn','s-no'));el.classList.add('s-'+s)}
+  render();
+}
+function setPos(p,b){PF=p;document.querySelectorAll('[data-pos]').forEach(x=>x.classList.remove('on'));b.classList.add('on');render()}
+document.getElementById('chsw').addEventListener('click',e=>{
+  const b=e.target.closest('.chb');if(!b)return;
+  CF=b.dataset.ch;
+  document.querySelectorAll('.chb').forEach(x=>x.classList.remove('a-all','a-cbbc','a-cbeeb'));
+  if(CF==='all')b.classList.add('a-all');
+  if(CF==='cbbc')b.classList.add('a-cbbc');
+  if(CF==='cbeeb')b.classList.add('a-cbeeb');
   render();
 });
-
-// Initial render
+document.getElementById('search').addEventListener('input',e=>{Q=e.target.value;render()});
 render();
 </script>
 </body>
