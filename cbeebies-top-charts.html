@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CBeebies Top Charts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800;900&family=DM+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FFF9F0;
+      --navy: #1A1464;
+      --orange: #FF6B35;
+      --yellow: #FFD23F;
+      --teal: #00B4D8;
+      --pink: #FF4D8B;
+      --green: #06D6A0;
+      --card: #FFFFFF;
+      --muted: #8B85A0;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--navy);
+      padding: 0 24px;
+      box-shadow: 0 4px 20px rgba(26,20,100,0.3);
+    }
+    .header-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: var(--yellow);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .logo-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 22px;
+      color: #fff;
+      line-height: 1.1;
+    }
+    .logo-sub {
+      font-size: 12px;
+      color: rgba(255,211,63,0.85);
+      font-weight: 700;
+    }
+
+    /* Toggle */
+    .toggle {
+      display: flex;
+      background: rgba(255,255,255,0.1);
+      border-radius: 30px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .toggle-btn {
+      padding: 8px 20px;
+      border-radius: 26px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.6);
+      font-family: 'Fredoka One', cursive;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toggle-btn.active {
+      background: var(--orange);
+      color: #fff;
+    }
+
+    /* ── ORANGE BAR ── */
+    .subbar {
+      background: var(--orange);
+      padding: 8px 24px;
+    }
+    .subbar-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .subbar-label {
+      font-weight: 900;
+      font-size: 13px;
+      color: #fff;
+    }
+    .subbar-time {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    /* API Key screen */
+    #key-screen {
+      text-align: center;
+      padding: 40px 0;
+    }
+    #key-screen h2 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 26px;
+      color: var(--navy);
+      margin: 16px 0 8px;
+    }
+    #key-screen p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .instructions {
+      background: rgba(0,180,216,0.08);
+      border: 2px solid rgba(0,180,216,0.25);
+      border-radius: 14px;
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 13px;
+      color: var(--navy);
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    .instructions a { color: var(--teal); }
+    .instructions strong { color: var(--navy); }
+    #api-key-input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 2px solid #EDE9F8;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--navy);
+      outline: none;
+      margin-bottom: 12px;
+      background: #FAFAFE;
+      transition: border-color 0.2s;
+    }
+    #api-key-input:focus { border-color: var(--teal); }
+    #load-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--navy);
+      color: #fff;
+      font-family: 'Fredoka One', cursive;
+      font-size: 18px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    #load-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    #load-btn:disabled { background: #EDE9F8; color: var(--muted); cursor: not-allowed; transform: none; }
+
+    /* Launch screen */
+    #launch-screen {
+      text-align: center;
+      padding: 50px 0;
+    }
+    #launch-screen h2 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 26px;
+      color: var(--navy);
+      margin: 16px 0 8px;
+    }
+    #launch-screen p { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+    .go-btn {
+      padding: 14px 36px;
+      border-radius: 50px;
+      border: none;
+      background: var(--orange);
+      color: #fff;
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+      transition: transform 0.15s;
+    }
+    .go-btn:hover { transform: scale(1.05); }
+
+    /* Spinner */
+    #loading {
+      text-align: center;
+      padding: 60px 0;
+    }
+    .spinner {
+      display: inline-block;
+      width: 48px; height: 48px;
+      border: 5px solid rgba(255,107,53,0.2);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 18px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading h3 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      color: var(--navy);
+    }
+    #loading p { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+    /* Error */
+    #error-box {
+      background: #FFF0F3;
+      border: 2px solid var(--pink);
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-align: center;
+    }
+    #error-box h3 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      color: var(--navy);
+      margin: 12px 0 8px;
+    }
+    #error-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: #c0003a;
+      margin-bottom: 18px;
+    }
+    .retry-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 10px;
+      background: var(--navy);
+      color: #fff;
+      font-family: 'Fredoka One', cursive;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 4px;
+    }
+    .change-key-btn {
+      padding: 10px 24px;
+      border: 2px solid var(--navy);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--navy);
+      font-family: 'Fredoka One', cursive;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 4px;
+    }
+
+    /* Summary */
+    #summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .stat-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: center;
+      border: 2px solid transparent;
+    }
+    .stat-card .stat-icon { font-size: 20px; margin-bottom: 4px; }
+    .stat-card .stat-val {
+      font-family: 'Fredoka One', cursive;
+      font-size: 22px;
+      line-height: 1;
+    }
+    .stat-card .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-top: 3px;
+    }
+
+    /* List header */
+    .list-header {
+      font-family: 'Fredoka One', cursive;
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    /* Video card */
+    .video-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+      border: 2px solid #EDE9F8;
+      box-shadow: 0 2px 8px rgba(26,20,100,0.05);
+      text-decoration: none;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      cursor: pointer;
+    }
+    .video-card:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Rank badge */
+    .rank {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 15px;
+      font-weight: 700;
+      flex-shrink: 0;
+      border: 2px solid #E0DCF0;
+      background: var(--navy);
+      color: #fff;
+    }
+    .rank.gold   { background: var(--yellow); color: var(--navy); border-color: var(--navy); box-shadow: 0 2px 10px rgba(255,211,63,0.6); }
+    .rank.silver { background: #C0C0C0;       color: var(--navy); border-color: var(--navy); }
+    .rank.bronze { background: #CD7F32;       color: var(--navy); border-color: var(--navy); }
+
+    /* Thumbnail */
+    .thumb-wrap { position: relative; flex-shrink: 0; }
+    .thumb-wrap img {
+      width: 100px; height: 62px;
+      object-fit: cover; border-radius: 10px;
+      border: 2px solid rgba(0,0,0,0.1);
+      display: block;
+    }
+    .thumb-placeholder {
+      width: 100px; height: 62px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+    }
+    .duration-badge {
+      position: absolute; bottom: 4px; right: 4px;
+      background: rgba(26,20,100,0.85);
+      color: #fff; font-family: 'DM Mono', monospace;
+      font-size: 10px; padding: 1px 5px;
+      border-radius: 4px; font-weight: 600;
+    }
+
+    /* Card body */
+    .card-body { flex: 1; min-width: 0; }
+    .card-title {
+      font-weight: 800; font-size: 14px;
+      color: var(--navy); line-height: 1.3;
+      margin-bottom: 7px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill {
+      display: flex; align-items: center; gap: 3px;
+      border-radius: 20px; padding: 2px 8px;
+      font-size: 12px; font-weight: 800;
+    }
+
+    /* Card right */
+    .card-right { flex-shrink: 0; text-align: right; }
+    .card-views {
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .card-views-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .card-date { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+    /* Refresh */
+    .refresh-wrap { text-align: center; margin-top: 24px; }
+    .refresh-btn {
+      padding: 10px 28px;
+      border-radius: 50px;
+      border: 2px solid var(--navy);
+      background: transparent;
+      color: var(--navy);
+      font-family: 'Fredoka One', cursive;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .refresh-btn:hover { background: var(--navy); color: #fff; }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 480px) {
+      .logo-title { font-size: 18px; }
+      #summary { grid-template-columns: repeat(3,1fr); gap: 6px; }
+      .stat-card .stat-val { font-size: 17px; }
+      .thumb-wrap img, .thumb-placeholder { width: 78px; height: 50px; }
+      .card-views { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo-wrap">
+      <div class="logo-icon">📺</div>
+      <div>
+        <div class="logo-title">CBeebies Top Charts</div>
+        <div class="logo-sub">YouTube Performance Dashboard</div>
+      </div>
+    </div>
+    <div class="toggle">
+      <button class="toggle-btn active" data-period="week" onclick="setPeriod('week')">This Week</button>
+      <button class="toggle-btn" data-period="month" onclick="setPeriod('month')">This Month</button>
+    </div>
+  </div>
+</header>
+
+<!-- ORANGE BAR -->
+<div class="subbar">
+  <div class="subbar-inner">
+    <span class="subbar-label" id="period-label">🗓 Top Videos — Last 7 Days</span>
+    <span class="subbar-time" id="updated-time"></span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- Step 1: API Key Entry -->
+  <div id="key-screen">
+    <div style="font-size:52px">🔑</div>
+    <h2>Enter your API Key</h2>
+    <p>This dashboard uses the YouTube Data API v3 to fetch real<br>view counts, likes, and comments from CBeebies.</p>
+
+    <div class="instructions">
+      <strong>Get your free API key in 3 steps:</strong><br>
+      1. Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> and sign in with Google<br>
+      2. Create a project → <em>APIs &amp; Services</em> → <em>Library</em> → search <strong>YouTube Data API v3</strong> → Enable<br>
+      3. Click <em>Create Credentials</em> → choose <strong>Public data</strong> → copy the key
+    </div>
+
+    <input type="text" id="api-key-input" placeholder="Paste your YouTube API key here (AIza...)" />
+    <button id="load-btn" disabled onclick="handleKeySubmit()">Load Charts →</button>
+  </div>
+
+  <!-- Step 2: Launch (after key saved) -->
+  <div id="launch-screen" class="hidden">
+    <div style="font-size:56px">📺</div>
+    <h2>Ready to load the charts!</h2>
+    <p>Fetches the top videos from CBeebies for the selected period.</p>
+    <button class="go-btn" onclick="fetchVideos()">Load Charts →</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="hidden">
+    <div class="spinner"></div>
+    <h3>Fetching top videos...</h3>
+    <p>Talking to the YouTube API</p>
+  </div>
+
+  <!-- Error -->
+  <div id="error-box" class="hidden">
+    <div style="font-size:36px">⚠️</div>
+    <h3>Something went wrong</h3>
+    <div id="error-msg"></div>
+    <button class="retry-btn" onclick="fetchVideos()">Try Again</button>
+    <button class="change-key-btn" onclick="changeKey()">Change API Key</button>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="hidden">
+    <div id="summary"></div>
+    <div class="list-header" id="list-header">TOP 10 VIDEOS</div>
+    <div id="video-list"></div>
+    <div class="refresh-wrap">
+      <button class="refresh-btn" onclick="fetchVideos()">🔄 Refresh</button>
+      <button class="change-key-btn" style="margin-left:8px" onclick="changeKey()">🔑 Change Key</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let apiKey = localStorage.getItem('yt_api_key') || '';
+  let currentPeriod = 'week';
+
+  const ACCENT_COLORS = ['#FF6B35','#FF4D8B','#00B4D8','#06D6A0','#FFD23F'];
+  const CHANNEL_ID = 'UC0fXNmjDoC7ckPyT6qM8Urw';
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  function fv(n) {
+    n = parseInt(n) || 0;
+    if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+    if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+    return n.toString();
+  }
+
+  function parseDuration(iso) {
+    const m = (iso||'').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!m) return '';
+    const h = +m[1]||0, min = +m[2]||0, s = +m[3]||0;
+    if (h) return `${h}:${String(min).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return `${min}:${String(s).padStart(2,'0')}`;
+  }
+
+  function getPublishedAfter(period) {
+    const d = new Date();
+    d.setDate(d.getDate() - (period === 'week' ? 7 : 30));
+    return d.toISOString();
+  }
+
+  function show(id)  { document.getElementById(id).classList.remove('hidden'); }
+  function hide(id)  { document.getElementById(id).classList.add('hidden'); }
+  function hideAll() { ['key-screen','launch-screen','loading','error-box','results'].forEach(hide); }
+
+  // ── Init ────────────────────────────────────────────────────────────────────
+  (function init() {
+    const input = document.getElementById('api-key-input');
+    input.addEventListener('input', () => {
+      document.getElementById('load-btn').disabled = !input.value.trim();
+    });
+
+    if (apiKey) {
+      hideAll(); show('launch-screen');
+    }
+  })();
+
+  // ── Period toggle ──────────────────────────────────────────────────────────
+  function setPeriod(p) {
+    currentPeriod = p;
+    document.querySelectorAll('.toggle-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.period === p);
+    });
+    document.getElementById('period-label').textContent =
+      p === 'week' ? '🗓 Top Videos — Last 7 Days' : '📅 Top Videos — Last 30 Days';
+
+    const resultsVisible = !document.getElementById('results').classList.contains('hidden');
+    if (resultsVisible) fetchVideos();
+  }
+
+  // ── Key handling ───────────────────────────────────────────────────────────
+  function handleKeySubmit() {
+    const val = document.getElementById('api-key-input').value.trim();
+    if (!val) return;
+    apiKey = val;
+    localStorage.setItem('yt_api_key', apiKey);
+    fetchVideos();
+  }
+
+  function changeKey() {
+    localStorage.removeItem('yt_api_key');
+    apiKey = '';
+    document.getElementById('api-key-input').value = '';
+    document.getElementById('load-btn').disabled = true;
+    hideAll(); show('key-screen');
+  }
+
+  // ── API Calls ───────────────────────────────────────────────────────────────
+  async function fetchVideos() {
+    hideAll(); show('loading');
+
+    try {
+      const videoIds = await searchVideos();
+      if (!videoIds.length) {
+        throw new Error('No videos found for this period. Try "This Month" instead.');
+      }
+      const videos = await getVideoStats(videoIds);
+      videos.sort((a,b) => b.views - a.views);
+      renderResults(videos);
+    } catch(e) {
+      hideAll(); show('error-box');
+      document.getElementById('error-msg').textContent = e.message || 'Unknown error';
+    }
+  }
+
+  async function searchVideos() {
+    const ids = [];
+    let pageToken = '';
+
+    do {
+      const params = new URLSearchParams({
+        part: 'id',
+        channelId: CHANNEL_ID,
+        type: 'video',
+        order: 'viewCount',
+        maxResults: '50',
+        publishedAfter: getPublishedAfter(currentPeriod),
+        key: apiKey,
+        ...(pageToken ? { pageToken } : {})
+      });
+
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`);
+      const data = await res.json();
+
+      if (data.error) throw new Error(data.error.message);
+
+      (data.items || []).forEach(item => {
+        if (item.id?.videoId) ids.push(item.id.videoId);
+      });
+
+      pageToken = data.nextPageToken || '';
+    } while (pageToken && ids.length < 150);
+
+    return ids;
+  }
+
+  async function getVideoStats(ids) {
+    const videos = [];
+
+    for (let i = 0; i < ids.length; i += 50) {
+      const batch = ids.slice(i, i+50).join(',');
+      const params = new URLSearchParams({
+        part: 'snippet,statistics,contentDetails',
+        id: batch,
+        key: apiKey
+      });
+
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+
+      (data.items || []).forEach(item => {
+        videos.push({
+          id:          item.id,
+          title:       item.snippet.title,
+          thumbnail:   item.snippet.thumbnails?.medium?.url || '',
+          publishedAt: (item.snippet.publishedAt || '').slice(0,10),
+          duration:    parseDuration(item.contentDetails?.duration),
+          views:       parseInt(item.statistics?.viewCount || 0),
+          likes:       parseInt(item.statistics?.likeCount || 0),
+          comments:    parseInt(item.statistics?.commentCount || 0),
+        });
+      });
+    }
+
+    return videos.slice(0, 20);
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+  function renderResults(videos) {
+    // Summary bar
+    const totalViews = videos.reduce((s,v) => s+v.views, 0);
+    const totalLikes = videos.reduce((s,v) => s+v.likes, 0);
+    const avgViews   = videos.length ? Math.round(totalViews/videos.length) : 0;
+
+    document.getElementById('summary').innerHTML = [
+      { label:'Total Views',    val: fv(totalViews), icon:'👁',  color:'#FF6B35' },
+      { label:'Avg per Video',  val: fv(avgViews),   icon:'📊',  color:'#00B4D8' },
+      { label:'Total Likes',    val: fv(totalLikes), icon:'👍',  color:'#FF4D8B' },
+    ].map(s => `
+      <div class="stat-card" style="border-color:${s.color}33">
+        <div class="stat-icon">${s.icon}</div>
+        <div class="stat-val" style="color:${s.color}">${s.val}</div>
+        <div class="stat-label">${s.label}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('list-header').textContent = `TOP ${videos.length} VIDEOS`;
+
+    document.getElementById('video-list').innerHTML = videos.map((v, i) => {
+      const accent = ACCENT_COLORS[i % ACCENT_COLORS.length];
+      const rankClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+      const thumb = v.thumbnail
+        ? `<img src="${v.thumbnail}" alt="${v.title.replace(/"/g,'')}" onerror="this.style.display='none'">`
+        : `<div class="thumb-placeholder">📺</div>`;
+
+      return `
+        <a class="video-card" href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener"
+           style="--accent:${accent}"
+           onmouseover="this.style.borderColor='${accent}';this.style.boxShadow='0 6px 24px ${accent}44'"
+           onmouseout="this.style.borderColor='#EDE9F8';this.style.boxShadow='0 2px 8px rgba(26,20,100,0.05)'">
+
+          <div class="rank ${rankClass}">${i+1}</div>
+
+          <div class="thumb-wrap">
+            ${thumb}
+            ${v.duration ? `<div class="duration-badge">${v.duration}</div>` : ''}
+          </div>
+
+          <div class="card-body">
+            <div class="card-title">${v.title}</div>
+            <div class="pills">
+              <div class="pill" style="background:${accent}18;color:${accent}">👁 ${fv(v.views)}</div>
+              ${v.likes > 0 ? `<div class="pill" style="background:#06D6A018;color:#06D6A0">👍 ${fv(v.likes)}</div>` : ''}
+              ${v.comments > 0 ? `<div class="pill" style="background:#00B4D818;color:#00B4D8">💬 ${fv(v.comments)}</div>` : ''}
+            </div>
+          </div>
+
+          <div class="card-right">
+            <div class="card-views" style="color:${accent}">${fv(v.views)}</div>
+            <div class="card-views-label">views</div>
+            ${v.publishedAt ? `<div class="card-date">${v.publishedAt}</div>` : ''}
+          </div>
+        </a>
+      `;
+    }).join('');
+
+    document.getElementById('updated-time').textContent =
+      'Updated ' + new Date().toLocaleTimeString();
+
+    hideAll(); show('results');
+  }
+</script>
+</body>
+</html>
