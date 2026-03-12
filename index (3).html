@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Experiments — Guy Phenix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --c1: #FF3CAC;
+      --c2: #784BA0;
+      --c3: #2B86C5;
+      --c4: #00D2FF;
+      --c5: #F9C22E;
+      --c6: #FF6B35;
+      --c7: #06D6A0;
+      --bg: #F5F2FF;
+      --ink: #0D0D1A;
+      --card-bg: #FFFFFF;
+      --border: rgba(13,13,26,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 10%  0%,  rgba(255,60,172,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 90% 10%,  rgba(0,210,255,0.12)  0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 90%,  rgba(249,194,46,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 20% 80%,  rgba(6,214,160,0.10)  0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 clamp(20px,5vw,64px);
+      background: rgba(245,242,255,0.88);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1300px; margin: 0 auto; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px;
+      letter-spacing: -0.3px; color: var(--ink); text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .nav-logo .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--c1), var(--c3));
+      animation: breathe 3s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%,100% { transform:scale(1); opacity:1; }
+      50%      { transform:scale(1.4); opacity:0.7; }
+    }
+    .nav-link {
+      font-size: 13px; font-weight: 500; color: var(--ink);
+      text-decoration: none; opacity: 0.45; transition: opacity 0.2s;
+      font-family: 'DM Mono', monospace; letter-spacing: 0.5px;
+    }
+    .nav-link:hover { opacity: 1; }
+
+    /* HERO */
+    .hero {
+      position: relative; z-index: 1;
+      padding: clamp(60px,10vw,110px) clamp(20px,5vw,64px) clamp(40px,6vw,70px);
+      max-width: 1300px; margin: 0 auto;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--c1), var(--c3));
+      color: #fff; font-family: 'DM Mono', monospace; font-size: 11px;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 6px 14px; border-radius: 100px;
+      margin-bottom: 28px; animation: fadeUp 0.5s ease both;
+    }
+    .hero-title {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(68px,13vw,168px); line-height: 0.88;
+      letter-spacing: -3px; color: var(--ink);
+      animation: fadeUp 0.5s 0.08s ease both;
+    }
+    .hero-title .grad {
+      background: linear-gradient(135deg, var(--c1) 0%, var(--c2) 40%, var(--c3) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-desc {
+      margin-top: 28px; font-size: clamp(15px,1.6vw,18px);
+      font-weight: 300; line-height: 1.75;
+      color: rgba(13,13,26,0.55); max-width: 520px;
+      animation: fadeUp 0.5s 0.16s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* TOOLBAR */
+    .toolbar {
+      position: relative; z-index: 1;
+      padding: 0 clamp(20px,5vw,64px) 28px;
+      max-width: 1300px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 14px;
+      animation: fadeUp 0.5s 0.24s ease both;
+    }
+    .file-count {
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      color: rgba(13,13,26,0.4); letter-spacing: 0.5px;
+    }
+    .file-count strong { color: var(--ink); }
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-btn {
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 6px 14px; border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: transparent; color: rgba(13,13,26,0.5);
+      cursor: pointer; transition: all 0.18s;
+    }
+    .filter-btn:hover { border-color:var(--ink); color:var(--ink); background:rgba(13,13,26,0.04); }
+    .filter-btn.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+
+    /* GRID */
+    .grid-wrap {
+      position: relative; z-index: 1;
+      padding: 0 clamp(20px,5vw,64px) 100px;
+      max-width: 1300px; margin: 0 auto;
+    }
+    .files-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+      gap: 16px;
+    }
+
+    /* Cycling accent colours */
+    .file-card:nth-child(7n+1) { --accent:var(--c1); --al:rgba(255,60,172,0.08); }
+    .file-card:nth-child(7n+2) { --accent:var(--c3); --al:rgba(43,134,197,0.08); }
+    .file-card:nth-child(7n+3) { --accent:var(--c5); --al:rgba(249,194,46,0.10); }
+    .file-card:nth-child(7n+4) { --accent:var(--c7); --al:rgba(6,214,160,0.08);  }
+    .file-card:nth-child(7n+5) { --accent:var(--c6); --al:rgba(255,107,53,0.08); }
+    .file-card:nth-child(7n+6) { --accent:var(--c2); --al:rgba(120,75,160,0.08); }
+    .file-card:nth-child(7n+0) { --accent:var(--c4); --al:rgba(0,210,255,0.08);  }
+
+    .file-card {
+      background: var(--card-bg); border-radius: 20px;
+      padding: 26px 24px 22px;
+      display: flex; flex-direction: column; gap: 14px;
+      text-decoration: none; color: inherit;
+      border: 1.5px solid var(--border);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      position: relative; overflow: hidden; cursor: pointer;
+    }
+    .file-card::before {
+      content: ''; position: absolute; top:0; left:0; right:0;
+      height: 3px; background: var(--accent);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .file-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 50px rgba(13,13,26,0.10), 0 4px 12px rgba(13,13,26,0.06);
+      border-color: rgba(13,13,26,0.12);
+    }
+    .file-card:hover::before { transform: scaleX(1); }
+    .file-card:hover .card-open {
+      background: var(--accent); color: #fff; transform: rotate(45deg);
+    }
+
+    .card-header { display:flex; align-items:flex-start; justify-content:space-between; }
+    .card-badge {
+      width:44px; height:44px; border-radius:12px;
+      background: var(--al); display:flex; align-items:center; justify-content:center;
+      font-size:20px; border:1px solid rgba(13,13,26,0.06);
+    }
+    .card-open {
+      width:32px; height:32px; border-radius:50%;
+      background: var(--al); border:1.5px solid rgba(13,13,26,0.06);
+      display:flex; align-items:center; justify-content:center;
+      color: var(--accent); font-size:14px;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .card-name {
+      font-family:'Syne',sans-serif; font-weight:700; font-size:18px;
+      line-height:1.2; color:var(--ink); letter-spacing:-0.3px; word-break:break-word;
+    }
+    .card-footer {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top:auto; padding-top:14px; border-top:1px solid var(--border);
+    }
+    .card-pill {
+      font-family:'DM Mono',monospace; font-size:10px;
+      letter-spacing:1.5px; text-transform:uppercase;
+      padding:4px 10px; border-radius:100px;
+      background: var(--al); color: var(--accent); font-weight:500;
+    }
+    .card-url {
+      font-family:'DM Mono',monospace; font-size:10px;
+      color:rgba(13,13,26,0.3); white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis; max-width:140px;
+    }
+
+    /* STATES */
+    .state-box { grid-column:1/-1; padding:80px 20px; text-align:center; }
+    .spinner {
+      display:inline-block; width:42px; height:42px; border-radius:50%;
+      border:3px solid rgba(13,13,26,0.08); border-top-color:var(--c1);
+      animation:spin 0.75s linear infinite; margin-bottom:22px;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .state-title { font-family:'Syne',sans-serif; font-weight:800; font-size:26px; color:var(--ink); margin-bottom:8px; }
+    .state-sub   { font-size:14px; color:rgba(13,13,26,0.45); font-family:'DM Mono',monospace; }
+
+    /* FOOTER */
+    footer {
+      position:relative; z-index:1;
+      border-top:1px solid var(--border);
+      padding:28px clamp(20px,5vw,64px);
+    }
+    .footer-inner {
+      max-width:1300px; margin:0 auto;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    }
+    .footer-txt  { font-family:'DM Mono',monospace; font-size:11px; color:rgba(13,13,26,0.35); letter-spacing:0.5px; }
+    .footer-link { font-family:'DM Mono',monospace; font-size:11px; color:rgba(13,13,26,0.35); text-decoration:none; letter-spacing:0.5px; transition:color 0.2s; }
+    .footer-link:hover { color:var(--c1); }
+
+    @media (max-width:560px) {
+      .hero-title { letter-spacing:-2px; }
+      .file-card  { padding:20px; border-radius:16px; }
+      .card-name  { font-size:16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-logo" href="https://www.guyphenix.com" target="_blank" rel="noopener">
+        <div class="dot"></div>Guy Phenix
+      </a>
+      <a class="nav-link" href="https://github.com/guyphenix/animationfunds" target="_blank" rel="noopener">github ↗</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-tag">✦ Live from GitHub</div>
+    <h1 class="hero-title"><span class="grad">EXPERI</span><br>MENTS</h1>
+    <p class="hero-desc">A growing collection of tools, documents and ideas. Click any project to open it. Updates automatically as new files are added.</p>
+  </section>
+
+  <div class="toolbar">
+    <div class="file-count"><strong id="file-count">—</strong> files</div>
+    <div class="filters" id="filters">
+      <button class="filter-btn active" data-ext="all" onclick="filterBy('all')">All</button>
+    </div>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="files-grid" id="grid">
+      <div class="state-box">
+        <div class="spinner"></div>
+        <div class="state-title">Loading…</div>
+        <div class="state-sub">Fetching files from GitHub</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-txt">© <span id="yr"></span> Guy Phenix</span>
+      <a class="footer-link" href="https://github.com/guyphenix/animationfunds" target="_blank" rel="noopener">View repository ↗</a>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    const BASE_URL = 'https://guyphenix.github.io/exp/';
+    const API      = 'https://api.github.com/repos/guyphenix/animationfunds/contents/?ref=main';
+
+    const ICONS = {
+      pdf:'📄', xlsx:'📊', xls:'📊', csv:'📊',
+      docx:'📝', doc:'📝', pptx:'📑', ppt:'📑',
+      html:'🌐', htm:'🌐', md:'📋', txt:'📋',
+      zip:'🗜',  rar:'🗜', png:'🖼', jpg:'🖼',
+      jpeg:'🖼', gif:'🖼', svg:'🖼', mp4:'🎬',
+      mov:'🎬',  mp3:'🎵', wav:'🎵',
+    };
+
+    let allFiles = [];
+
+    const ext   = name => { const p = name.split('.'); return p.length > 1 ? p.pop().toLowerCase() : ''; };
+    const icon  = e    => ICONS[e] || '📁';
+    const label = name => name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+    const fsize = b    => {
+      if (!b) return '';
+      if (b < 1024) return b + ' B';
+      if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+      return (b / 1048576).toFixed(1) + ' MB';
+    };
+
+    async function load() {
+      try {
+        const res = await fetch(API, { headers: { Accept: 'application/vnd.github.v3+json' } });
+        if (!res.ok) throw new Error('GitHub API responded with ' + res.status);
+        const items = await res.json();
+
+        allFiles = items
+          .filter(i => i.type === 'file' && !i.name.startsWith('.') && !['README.md','index.html'].includes(i.name))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        buildFilters();
+        render(allFiles);
+      } catch(e) {
+        document.getElementById('grid').innerHTML = `
+          <div class="state-box">
+            <div style="font-size:40px;margin-bottom:16px">😬</div>
+            <div class="state-title">Couldn't load files</div>
+            <div class="state-sub">${e.message}</div>
+          </div>`;
+        document.getElementById('file-count').textContent = '0';
+      }
+    }
+
+    function buildFilters() {
+      const exts = [...new Set(allFiles.map(f => ext(f.name)).filter(Boolean))].sort();
+      const bar  = document.getElementById('filters');
+      exts.forEach(e => {
+        const b = document.createElement('button');
+        b.className   = 'filter-btn';
+        b.dataset.ext = e;
+        b.textContent = e.toUpperCase();
+        b.onclick     = () => filterBy(e);
+        bar.appendChild(b);
+      });
+    }
+
+    function filterBy(e) {
+      document.querySelectorAll('.filter-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.ext === e)
+      );
+      render(e === 'all' ? allFiles : allFiles.filter(f => ext(f.name) === e));
+    }
+
+    function render(files) {
+      document.getElementById('file-count').textContent = files.length;
+      const grid = document.getElementById('grid');
+
+      if (!files.length) {
+        grid.innerHTML = `
+          <div class="state-box">
+            <div style="font-size:40px;margin-bottom:16px">🗂</div>
+            <div class="state-title">Nothing here yet</div>
+            <div class="state-sub">No files match this filter.</div>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = files.map((f, i) => {
+        const e     = ext(f.name);
+        const ico   = icon(e);
+        const lbl   = label(f.name);
+        const sz    = fsize(f.size);
+        const href  = BASE_URL + f.name;          // e.g. https://guyphenix.github.io/exp/myproject.html
+        const delay = Math.min(i * 0.04, 0.6);
+
+        return `
+          <a class="file-card"
+             href="${href}"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="animation:fadeUp 0.45s ${delay}s ease both;opacity:0">
+            <div class="card-header">
+              <div class="card-badge">${ico}</div>
+              <div class="card-open">↗</div>
+            </div>
+            <div class="card-name">${lbl}</div>
+            <div class="card-footer">
+              ${e ? `<span class="card-pill">${e}</span>` : '<span></span>'}
+              ${sz ? `<span class="card-size">${sz}</span>` : ''}
+            </div>
+          </a>`;
+      }).join('');
+    }
+
+    load();
+  </script>
+</body>
+</html>
