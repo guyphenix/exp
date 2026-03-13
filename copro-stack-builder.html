@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Co-Pro Stack Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Archivo+Black&family=Archivo:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E63329;
+    --blue: #1B3FCC;
+    --yellow: #F5C800;
+    --black: #0D0D0D;
+    --white: #F5F0E8;
+    --grey: #D4CFC6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--white);
+    font-family: 'Archivo', sans-serif;
+    color: var(--black);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--black);
+    display: grid;
+    grid-template-columns: 18px 1fr 120px;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .header-stripe { background: var(--red); }
+  .header-mid { padding: 28px 36px; }
+
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 6px;
+  }
+
+  header h1 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(28px, 5vw, 52px);
+    color: var(--white);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+  }
+
+  .header-circle {
+    background: var(--yellow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .header-circle::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--red);
+  }
+
+  main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - 120px);
+  }
+
+  .input-panel {
+    border-right: 3px solid var(--black);
+    padding: 48px 40px;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--red);
+    opacity: 0.3;
+  }
+
+  .field-group { margin-bottom: 28px; }
+
+  .field-group > label {
+    display: block;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .select-wrapper { position: relative; }
+
+  .select-wrapper::after {
+    content: '▼';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    pointer-events: none;
+  }
+
+  select, input[type="number"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--black);
+    background: var(--white);
+    font-family: 'Archivo', sans-serif;
+    font-size: 15px;
+    color: var(--black);
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  select:focus, input:focus {
+    border-color: var(--blue);
+    background: #EBF0FF;
+  }
+
+  /* ── TERRITORY BUTTONS — pure divs, no checkbox conflict ── */
+  .territory-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .t-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border: 2px solid var(--grey);
+    background: var(--white);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: 'Archivo', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--black);
+  }
+
+  .t-btn:hover { border-color: var(--black); }
+
+  .t-btn.on {
+    border-color: var(--blue);
+    background: #EBF0FF;
+  }
+
+  .t-dot {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--black);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: white;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .t-btn.on .t-dot {
+    background: var(--blue);
+    border-color: var(--blue);
+  }
+
+  .territory-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #999;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  .build-btn {
+    width: 100%;
+    padding: 20px;
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 16px;
+  }
+
+  .build-btn:hover { background: var(--black); transform: translateY(-2px); }
+  .build-btn:active { transform: translateY(0); }
+
+  /* ── OUTPUT ── */
+  .output-panel { padding: 48px 40px; }
+
+  .empty-state {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 24px;
+    opacity: 0.35;
+  }
+
+  .empty-bauhaus {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 80px;
+    height: 80px;
+  }
+
+  .empty-bauhaus div:nth-child(1) { background: var(--red); }
+  .empty-bauhaus div:nth-child(2) { background: var(--blue); border-radius: 50%; }
+  .empty-bauhaus div:nth-child(3) { background: var(--yellow); border-radius: 50% 0 0 0; }
+  .empty-bauhaus div:nth-child(4) { background: var(--black); }
+
+  .empty-state p {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  #results { display: none; }
+  #results.on { display: block; }
+
+  .total-bar {
+    background: var(--black);
+    color: var(--white);
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .total-bar .tl { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--yellow); }
+  .total-bar .ts { font-family: 'DM Mono', monospace; font-size: 12px; color: #aaa; margin-top: 4px; }
+  .total-bar .ta { font-family: 'Archivo Black', sans-serif; font-size: 28px; }
+
+  .partner-card {
+    border: 2px solid var(--black);
+    margin-bottom: 12px;
+    overflow: hidden;
+    animation: slideIn 0.3s ease both;
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+
+  .pc-head {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    gap: 14px;
+    background: #F5F0E8;
+  }
+
+  .pc-flag { font-size: 22px; line-height: 1; }
+  .pc-name { font-family: 'Archivo Black', sans-serif; font-size: 14px; text-transform: uppercase; flex: 1; }
+  .pc-pct { font-family: 'Archivo Black', sans-serif; font-size: 22px; color: white; padding: 4px 12px; }
+
+  .pc-body { padding: 14px 18px; border-top: 1px solid var(--grey); background: #FAFAF6; }
+  .pc-amt { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; margin-bottom: 8px; color: var(--red); }
+  .pc-note { font-size: 13px; line-height: 1.6; color: #444; }
+  .pc-tag { display: inline-block; background: var(--yellow); padding: 2px 8px; font-family: 'DM Mono', monospace; font-size: 11px; margin-top: 6px; margin-right: 4px; }
+
+  .stack-vis { margin-top: 24px; border: 2px solid var(--black); overflow: hidden; }
+  .sv-head { background: var(--black); color: var(--white); padding: 8px 14px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
+  .sv-bar { display: flex; height: 36px; }
+  .sv-seg { height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .sv-seg span { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; white-space: nowrap; padding: 0 4px; }
+
+  .alert { padding: 16px 18px; margin-top: 12px; display: flex; gap: 12px; align-items: flex-start; border: 2px solid var(--black); font-size: 13px; line-height: 1.5; }
+  .alert strong { font-family: 'Archivo Black', sans-serif; display: block; margin-bottom: 4px; }
+  .alert-warn { background: var(--yellow); }
+  .alert-ok { background: #E8F5E9; border-color: #2D9E4F; }
+
+  @media (max-width: 768px) {
+    main { grid-template-columns: 1fr; }
+    .input-panel { border-right: none; border-bottom: 3px solid var(--black); padding: 32px 24px; }
+    .output-panel { padding: 32px 24px; }
+    .territory-grid { grid-template-columns: 1fr; }
+    header { grid-template-columns: 8px 1fr; }
+    .header-circle { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-stripe"></div>
+  <div class="header-mid">
+    <div class="header-label">Animation Finance Tool — 01</div>
+    <h1>Co-Pro Stack<br>Builder</h1>
+  </div>
+  <div class="header-circle"></div>
+</header>
+
+<main>
+  <div class="input-panel">
+    <div class="section-label">Your Project</div>
+
+    <div class="field-group">
+      <label>Home Territory</label>
+      <div class="select-wrapper">
+        <select id="homeTerritory">
+          <option value="uk">United Kingdom</option>
+          <option value="ireland">Ireland</option>
+          <option value="france">France</option>
+          <option value="germany">Germany</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Format</label>
+      <div class="select-wrapper">
+        <select id="format">
+          <option value="52x7">52 × 7' (Short series)</option>
+          <option value="52x11" selected>52 × 11' (Standard series)</option>
+          <option value="26x22">26 × 22' (Long form)</option>
+          <option value="26x7">26 × 7' (Mini series)</option>
+          <option value="10x22">10 × 22' (Premium short run)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Budget Per Episode (£)</label>
+      <input type="number" id="budget" value="300000" min="50000" step="10000">
+    </div>
+
+    <div class="field-group">
+      <label>Home Broadcaster Attached?</label>
+      <div class="select-wrapper">
+        <select id="broadcaster">
+          <option value="cbeebies">CBeebies (BBC)</option>
+          <option value="milkshake">Milkshake! (Channel 5)</option>
+          <option value="none">None yet</option>
+          <option value="netflix">Netflix</option>
+          <option value="apple">Apple TV+</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Target Co-Production Territories</label>
+      <div class="territory-grid">
+        <div class="t-btn" data-t="canada" onclick="toggle(this)"><div class="t-dot"></div>🇨🇦 Canada</div>
+        <div class="t-btn" data-t="france" onclick="toggle(this)"><div class="t-dot"></div>🇫🇷 France</div>
+        <div class="t-btn" data-t="australia" onclick="toggle(this)"><div class="t-dot"></div>🇦🇺 Australia</div>
+        <div class="t-btn" data-t="ireland" onclick="toggle(this)"><div class="t-dot"></div>🇮🇪 Ireland</div>
+        <div class="t-btn" data-t="germany" onclick="toggle(this)"><div class="t-dot"></div>🇩🇪 Germany</div>
+        <div class="t-btn" data-t="nordics" onclick="toggle(this)"><div class="t-dot"></div>🇸🇪 Nordics</div>
+      </div>
+      <p class="territory-hint">Click to toggle. None selected = no co-pro partners.</p>
+    </div>
+
+    <button class="build-btn" onclick="build()">Build My Stack →</button>
+  </div>
+
+  <div class="output-panel">
+    <div class="section-label">Your Stack</div>
+    <div class="empty-state" id="empty">
+      <div class="empty-bauhaus"><div></div><div></div><div></div><div></div></div>
+      <p>Select territories and build<br>your financing stack</p>
+    </div>
+    <div id="results"></div>
+  </div>
+</main>
+
+<script>
+  const TD = {
+    canada:    { flag:'🇨🇦', name:'Canada',    fund:'CMF + CBC Kids',               pct:25, color:'#E63329', funds:['Canada Media Fund','Telefilm Canada'],    note:'Requires Canadian co-producer. CBC Kids interest strengthens CMF application significantly. Treaty co-production status essential.' },
+    france:    { flag:'🇫🇷', name:'France',    fund:'CNC + France Télévisions',      pct:20, color:'#1B3FCC', funds:['CNC','France Télévisions'],               note:'French co-producer required (Folivari, Dandelooo, TeamTO). CNC COSIP funding tied to broadcaster presale. Quota system works in your favour.' },
+    australia: { flag:'🇦🇺', name:'Australia', fund:'Screen Australia + ABC Kids',   pct:18, color:'#E8A020', funds:['Screen Australia','ABC Kids'],            note:'Nature/outdoor content particularly strong. ABC Kids relationship is key. Production Activity funding requires Australian creative lead.' },
+    ireland:   { flag:'🇮🇪', name:'Ireland',   fund:'Screen Ireland + TG4',          pct:12, color:'#2D9E4F', funds:['Screen Ireland','BAI Sound & Vision'],    note:'Easiest first co-pro partner for UK studios. Section 481 tax incentive adds further value. English language removes creative friction.' },
+    germany:   { flag:'🇩🇪', name:'Germany',   fund:'KiKA + Regional Funds',         pct:15, color:'#6B4CE6', funds:['KiKA','MDR','German Regional Funds'],      note:'German co-producer required. KiKA (ZDF/ARD) is the primary broadcaster target. Dialogue-light content travels well.' },
+    nordics:   { flag:'🇸🇪', name:'Nordics',   fund:'NRK + SVT + YLE',               pct:10, color:'#0891B2', funds:['Nordic Film & TV Fund','SVT','NRK'],       note:'Multiple broadcaster relationships across Sweden, Norway, Finland. Nordic Film & TV Fund co-production support available.' }
+  };
+
+  const BC = {
+    cbeebies:  { pct:12, label:'CBeebies / BBC',     note:'Typical BBC contribution — deficit financing required for the remainder.' },
+    milkshake: { pct:8,  label:'Milkshake! / Ch5',   note:'Lower fee — strong co-pro stack essential to close the gap.' },
+    none:      { pct:0,  label:'No broadcaster yet', note:'Speculative development — presales strategy needed before financing is viable.' },
+    netflix:   { pct:45, label:'Netflix',             note:'Higher fee but typically requires meaningful IP rights concessions.' },
+    apple:     { pct:55, label:'Apple TV+',           note:'Premium fee with premium quality expectations and long lead times.' }
+  };
+
+  function toggle(el) {
+    el.classList.toggle('on');
+  }
+
+  function fm(n) {
+    if (n >= 1000000) return '£' + (n/1000000).toFixed(2) + 'm';
+    if (n >= 1000)    return '£' + Math.round(n/1000).toLocaleString() + 'k';
+    return '£' + Math.round(n).toLocaleString();
+  }
+
+  function card(p, total, idx) {
+    const amt = total * p.pct / 100;
+    const tags = (p.funds||[]).map(f=>`<span class="pc-tag">${f}</span>`).join('');
+    return `<div class="partner-card" style="animation-delay:${idx*0.07}s">
+      <div class="pc-head">
+        <div class="pc-flag">${p.flag}</div>
+        <div class="pc-name">${p.name}${p.fund?' — '+p.fund:''}</div>
+        <div class="pc-pct" style="background:${p.color||'#333'}">${p.pct}%</div>
+      </div>
+      <div class="pc-body">
+        <div class="pc-amt">${fm(amt)}</div>
+        <div class="pc-note">${p.note}</div>
+        ${tags?`<div style="margin-top:6px">${tags}</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  function build() {
+    const budget   = parseInt(document.getElementById('budget').value)||300000;
+    const format   = document.getElementById('format').value;
+    const bcKey    = document.getElementById('broadcaster').value;
+    const eps      = parseInt(format.split('x')[0]);
+    const total    = budget * eps;
+    const bc       = BC[bcKey];
+
+    const selected = Array.from(document.querySelectorAll('.t-btn.on')).map(b=>b.dataset.t);
+
+    let covered = bc.pct;
+    const partners = [];
+    for (const t of selected) {
+      if (TD[t] && covered + TD[t].pct <= 95) {
+        partners.push(TD[t]);
+        covered += TD[t].pct;
+      }
+    }
+    covered += 20; // ATR
+    const gap = Math.max(0, 100 - covered);
+
+    // Visual bar
+    const segs = [];
+    if (bc.pct>0) segs.push({label:bc.label.split('/')[0].trim(), pct:bc.pct, bg:'#0D0D0D', col:'#fff'});
+    partners.forEach(p => segs.push({label:p.flag, pct:p.pct, bg:p.color, col:'#fff'}));
+    segs.push({label:'ATR', pct:20, bg:'#888', col:'#fff'});
+    if (gap>0) segs.push({label:'GAP', pct:gap, bg:'#F5C800', col:'#000'});
+
+    const barHtml = segs.map(s=>`<div class="sv-seg" style="flex:${s.pct};background:${s.bg}"><span style="color:${s.col}">${s.label} ${s.pct}%</span></div>`).join('');
+
+    let html = `
+      <div class="total-bar">
+        <div><div class="tl">Total Production Budget</div><div class="ts">${eps} eps × ${fm(budget)}</div></div>
+        <div class="ta">${fm(total)}</div>
+      </div>
+      <div class="stack-vis"><div class="sv-head">Financing Stack</div><div class="sv-bar">${barHtml}</div></div>
+      <div style="margin:24px 0 12px;font-family:'Archivo Black',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:1px">Partners</div>
+    `;
+
+    html += card({flag:'📺', name:bc.label, pct:bc.pct, color:'#0D0D0D', funds:[], note:bc.note}, total, 0);
+    partners.forEach((p,i) => { html += card(p, total, i+1); });
+    html += card({flag:'🏦', name:'UK Animation Tax Relief', pct:20, color:'#555', funds:['HMRC ATR'], note:'25% of qualifying UK expenditure. Requires BFI Cultural Test pass (min 18/31 points). Essential — model from day one.'}, total, partners.length+1);
+
+    if (gap > 5) {
+      html += `<div class="alert alert-warn"><span style="font-size:18px">⚠</span><div><strong>Financing Gap: ${gap}% — ${fm(total*gap/100)}</strong>Consider adding more co-production territories, pursuing distribution advances (Cake, Distribution360), or a production loan against the ATR credit.</div></div>`;
+    } else {
+      html += `<div class="alert alert-ok"><span style="font-size:18px">✓</span><div><strong>Stack looks viable — ${100-gap}% covered</strong>Remaining gap of ${gap}% is within normal distribution advance territory. Strong position to enter a broadcaster conversation.</div></div>`;
+    }
+
+    document.getElementById('empty').style.display = 'none';
+    const r = document.getElementById('results');
+    r.classList.add('on');
+    r.innerHTML = html;
+  }
+</script>
+</body>
+</html>
