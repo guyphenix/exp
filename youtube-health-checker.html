@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Kids Health Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Syne+Mono&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00E676;
+    --amber: #FFB300;
+    --red: #FF3D3D;
+    --black: #0A0A0A;
+    --dark: #111111;
+    --surface: #1A1A1A;
+    --surface2: #222222;
+    --border: #2A2A2A;
+    --text: #F0F0F0;
+    --muted: #666;
+    --muted2: #999;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 48px 56px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, var(--green) 0%, transparent 60%);
+  }
+
+  .tool-num {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 56px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  header h1 span { color: var(--green); }
+
+  header p {
+    color: var(--muted2);
+    font-size: 14px;
+    margin-top: 12px;
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* ── API KEY SETUP BANNER ── */
+  .setup-banner {
+    margin: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 56px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .setup-banner.hidden { display: none; }
+
+  .setup-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .setup-text {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .setup-text strong {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--amber);
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .setup-text p {
+    font-size: 12px;
+    color: var(--muted2);
+    line-height: 1.5;
+  }
+
+  .setup-text a {
+    color: var(--green);
+    text-decoration: none;
+  }
+
+  .setup-text a:hover { text-decoration: underline; }
+
+  .api-key-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .api-key-input {
+    padding: 10px 14px;
+    background: var(--dark);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    width: 280px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-key-input:focus { border-color: var(--green); }
+  .api-key-input::placeholder { color: var(--muted); }
+
+  .save-key-btn {
+    padding: 10px 20px;
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  .save-key-btn:hover { background: #69F0AE; }
+
+  .key-status {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  .key-status.ok { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+  .key-status.err { background: rgba(255,61,61,0.1); color: var(--red); border: 1px solid rgba(255,61,61,0.3); }
+
+  /* ── INPUT SECTION ── */
+  .input-section {
+    padding: 40px 56px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .input-row {
+    display: flex;
+    gap: 12px;
+    max-width: 700px;
+  }
+
+  .url-input {
+    flex: 1;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Syne Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .url-input:focus { border-color: var(--green); }
+  .url-input::placeholder { color: var(--muted); }
+
+  .check-btn {
+    padding: 16px 32px;
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .check-btn:hover { background: #69F0AE; }
+  .check-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  .input-hint {
+    margin-top: 12px;
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── WHAT'S REAL NOTICE ── */
+  .data-notice {
+    margin-top: 20px;
+    max-width: 700px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    padding: 14px 18px;
+  }
+
+  .data-notice h4 {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+
+  .data-notice ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 20px;
+  }
+
+  .data-notice li {
+    font-size: 12px;
+    color: var(--muted2);
+    line-height: 1.5;
+  }
+
+  .data-notice li::before { margin-right: 6px; }
+  .data-notice li.yes::before { content: '✓'; color: var(--green); }
+  .data-notice li.no::before { content: '✕'; color: var(--red); }
+
+  /* ── LOADING ── */
+  .loading {
+    display: none;
+    padding: 80px 56px;
+    text-align: center;
+  }
+
+  .loading.active { display: block; }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-steps {
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* ── RESULTS ── */
+  .results {
+    display: none;
+    padding: 48px 56px;
+  }
+
+  .results.active { display: block; }
+
+  /* CHANNEL HERO */
+  .channel-hero {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 28px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .channel-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .channel-thumb-placeholder {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+
+  .channel-info { flex: 1; }
+
+  .channel-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .channel-meta {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    color: var(--muted2);
+    letter-spacing: 1px;
+  }
+
+  .channel-badges {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+
+  .badge-green { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+  .badge-amber { background: rgba(255,179,0,0.1); color: var(--amber); border: 1px solid rgba(255,179,0,0.3); }
+  .badge-red { background: rgba(255,61,61,0.1); color: var(--red); border: 1px solid rgba(255,61,61,0.3); }
+  .badge-grey { background: rgba(255,255,255,0.05); color: var(--muted2); border: 1px solid var(--border); }
+
+  .overall-score {
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .score-ring {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+
+  .score-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .score-ring .track { fill: none; stroke: var(--border); stroke-width: 6; }
+  .score-ring .fill { fill: none; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 283; transition: stroke-dashoffset 1.5s ease; }
+
+  .score-inner {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .score-inner .num {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .score-inner .lbl {
+    font-family: 'Syne Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .stat-box {
+    background: var(--dark);
+    padding: 20px 22px;
+  }
+
+  .stat-key {
+    font-family: 'Syne Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--muted2);
+    margin-top: 4px;
+  }
+
+  /* METRICS */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .metric-card {
+    background: var(--dark);
+    padding: 22px;
+  }
+
+  .metric-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .metric-name {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .metric-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-amber { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .dot-red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .dot-grey { background: var(--muted); }
+
+  .metric-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .metric-sub {
+    font-size: 12px;
+    color: var(--muted2);
+    line-height: 1.5;
+  }
+
+  .metric-bar {
+    margin-top: 12px;
+    height: 2px;
+    background: var(--border);
+  }
+
+  .metric-bar-fill {
+    height: 100%;
+    transition: width 1s ease;
+    width: 0;
+  }
+
+  /* RECENT VIDEOS */
+  .recent-section {
+    margin-bottom: 32px;
+  }
+
+  .section-title {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .video-list {
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .video-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.15s;
+  }
+
+  .video-row:last-child { border-bottom: none; }
+  .video-row:hover { background: var(--surface); }
+
+  .video-num {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 20px;
+    text-align: right;
+  }
+
+  .video-title {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .video-date {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    color: var(--muted2);
+    white-space: nowrap;
+  }
+
+  .video-views {
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .video-mfk {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    white-space: nowrap;
+  }
+
+  /* RECOMMENDATIONS */
+  .rec-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.4s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  .rec-priority {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    height: fit-content;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .p-high { background: rgba(255,61,61,0.12); color: var(--red); border: 1px solid rgba(255,61,61,0.25); }
+  .p-med  { background: rgba(255,179,0,0.12); color: var(--amber); border: 1px solid rgba(255,179,0,0.25); }
+  .p-low  { background: rgba(0,230,118,0.08); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+
+  .rec-body h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .rec-body p { font-size: 13px; color: var(--muted2); line-height: 1.6; }
+
+  /* DATA SOURCE FOOTER */
+  .data-source {
+    margin-top: 32px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    line-height: 1.8;
+  }
+
+  .data-source strong { color: var(--muted2); }
+
+  /* ERROR */
+  .error-panel {
+    display: none;
+    padding: 48px 56px;
+  }
+
+  .error-panel.active { display: block; }
+
+  .error-box {
+    max-width: 600px;
+    background: var(--surface);
+    border: 1px solid var(--red);
+    padding: 28px 32px;
+  }
+
+  .error-box h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 12px;
+  }
+
+  .error-box p { font-size: 13px; color: var(--muted2); line-height: 1.7; margin-bottom: 8px; }
+  .error-box code {
+    display: block;
+    background: var(--dark);
+    padding: 10px 14px;
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    color: var(--amber);
+    margin: 12px 0;
+    word-break: break-all;
+  }
+
+  @media (max-width: 900px) {
+    header { padding: 32px 24px; }
+    .setup-banner { padding: 16px 24px; }
+    .input-section { padding: 32px 24px; }
+    .results { padding: 32px 24px; }
+    .error-panel { padding: 32px 24px; }
+    .loading { padding: 60px 24px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .metrics-grid { grid-template-columns: 1fr; }
+    .channel-hero { flex-direction: column; align-items: flex-start; }
+    .api-key-row { flex-wrap: wrap; }
+    .api-key-input { width: 100%; }
+    .data-notice ul { grid-template-columns: 1fr; }
+    .video-row { grid-template-columns: auto 1fr auto; }
+    .video-date, .video-mfk { display: none; }
+    .input-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-accent"></div>
+  <div class="tool-num">Animation Finance Tool — 03</div>
+  <h1>YouTube Kids<br><span>Health</span> Checker</h1>
+  <p>Real channel analysis using YouTube Data API v3. Public metrics, genuine intelligence, honest about what it can and can't see.</p>
+</header>
+
+<!-- API KEY SETUP -->
+<div class="setup-banner" id="setupBanner">
+  <div class="setup-icon">🔑</div>
+  <div class="setup-text">
+    <strong>YouTube API Key Required</strong>
+    <p>Get a free key in ~3 minutes: <a href="https://console.cloud.google.com/" target="_blank">console.cloud.google.com</a> → New Project → Enable YouTube Data API v3 → Credentials → Create API Key. Free quota: 10,000 units/day (enough for ~200 channel checks).</p>
+  </div>
+  <div class="api-key-row">
+    <input type="text" class="api-key-input" id="apiKeyInput" placeholder="AIza...your key here">
+    <button class="save-key-btn" onclick="saveApiKey()">Save Key</button>
+    <span class="key-status" id="keyStatus" style="display:none"></span>
+  </div>
+</div>
+
+<!-- INPUT -->
+<div class="input-section">
+  <div class="input-row">
+    <input type="text" class="url-input" id="urlInput"
+      placeholder="youtube.com/@channelhandle  or  channel URL  or  UCxxxxxxxx">
+    <button class="check-btn" id="checkBtn" onclick="runCheck()">Analyse Channel →</button>
+  </div>
+  <p class="input-hint">Accepts: @handles, full URLs, or channel IDs starting with UC</p>
+
+  <div class="data-notice">
+    <h4>What this tool actually measures</h4>
+    <ul>
+      <li class="yes">Subscriber count &amp; total views</li>
+      <li class="yes">Upload frequency &amp; cadence</li>
+      <li class="yes">Per-video view counts &amp; engagement</li>
+      <li class="yes">Made for Kids status (COPPA)</li>
+      <li class="yes">Channel age &amp; growth trajectory</li>
+      <li class="yes">Average views per video</li>
+      <li class="no">RPM / ad revenue (owner-only)</li>
+      <li class="no">Watch duration / retention (owner-only)</li>
+      <li class="no">Click-through rate (owner-only)</li>
+      <li class="no">Impressions (owner-only)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-steps" id="loadingSteps">Resolving channel...</div>
+</div>
+
+<div class="error-panel" id="errorPanel"></div>
+<div class="results" id="results"></div>
+
+<script>
+  let API_KEY = localStorage.getItem('yt_api_key') || '';
+
+  // ── Init ──
+  window.addEventListener('DOMContentLoaded', () => {
+    if (API_KEY) {
+      document.getElementById('apiKeyInput').value = API_KEY;
+      document.getElementById('setupBanner').classList.add('hidden');
+    }
+  });
+
+  function saveApiKey() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) return;
+    API_KEY = key;
+    localStorage.setItem('yt_api_key', key);
+    document.getElementById('setupBanner').classList.add('hidden');
+    const s = document.getElementById('keyStatus');
+    s.textContent = '✓ Saved';
+    s.className = 'key-status ok';
+    s.style.display = 'inline';
+    setTimeout(() => { s.style.display = 'none'; }, 2000);
+  }
+
+  // ── Parse channel input → channel ID ──
+  async function resolveChannelId(input) {
+    input = input.trim();
+
+    // Already a channel ID
+    if (/^UC[\w-]{22}$/.test(input)) return input;
+
+    // Extract from URL
+    const ucMatch = input.match(/youtube\.com\/channel\/(UC[\w-]{22})/);
+    if (ucMatch) return ucMatch[1];
+
+    // Handle @username or youtube.com/@username
+    let handle = input;
+    const handleMatch = input.match(/@([\w.-]+)/);
+    if (handleMatch) handle = handleMatch[1];
+    else if (input.includes('youtube.com/')) {
+      const parts = input.split('/').filter(Boolean);
+      handle = parts[parts.length - 1];
+    }
+
+    // Look up by handle
+    const url = `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${encodeURIComponent(handle)}&key=${API_KEY}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+    if (!d.items || d.items.length === 0) throw new Error(`No channel found for "@${handle}". Check the handle or try pasting the full channel URL.`);
+    return d.items[0].id;
+  }
+
+  // ── Fetch channel data ──
+  async function fetchChannel(channelId) {
+    const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,status,brandingSettings,contentDetails&id=${channelId}&key=${API_KEY}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+    if (!d.items || d.items.length === 0) throw new Error('Channel not found.');
+    return d.items[0];
+  }
+
+  // ── Fetch recent uploads ──
+  async function fetchRecentVideos(uploadsPlaylistId, maxResults = 20) {
+    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${uploadsPlaylistId}&maxResults=${maxResults}&key=${API_KEY}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+    return d.items || [];
+  }
+
+  // ── Fetch video stats ──
+  async function fetchVideoStats(videoIds) {
+    const ids = videoIds.join(',');
+    const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics,status,snippet&id=${ids}&key=${API_KEY}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+    return d.items || [];
+  }
+
+  // ── Format numbers ──
+  function fmt(n) {
+    n = parseInt(n) || 0;
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+    return n.toLocaleString();
+  }
+
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  }
+
+  function daysSince(iso) {
+    return Math.floor((Date.now() - new Date(iso)) / 86400000);
+  }
+
+  // ── Main analysis ──
+  async function runCheck() {
+    if (!API_KEY) {
+      alert('Please enter and save your YouTube API key first.');
+      return;
+    }
+
+    const input = document.getElementById('urlInput').value.trim();
+    if (!input) return;
+
+    // Reset UI
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('results').classList.remove('active');
+    document.getElementById('errorPanel').classList.remove('active');
+    document.getElementById('errorPanel').innerHTML = '';
+    document.getElementById('checkBtn').disabled = true;
+
+    try {
+      setStep('Resolving channel handle...');
+      const channelId = await resolveChannelId(input);
+
+      setStep('Fetching channel data...');
+      const channel = await fetchChannel(channelId);
+
+      setStep('Loading recent uploads...');
+      const uploadsId = channel.contentDetails?.relatedPlaylists?.uploads;
+      const recentItems = uploadsId ? await fetchRecentVideos(uploadsId, 20) : [];
+
+      let videoStats = [];
+      if (recentItems.length > 0) {
+        setStep('Analysing video performance...');
+        const videoIds = recentItems.map(i => i.contentDetails?.videoId).filter(Boolean);
+        videoStats = await fetchVideoStats(videoIds);
+      }
+
+      setStep('Building report...');
+      await new Promise(r => setTimeout(r, 400));
+
+      renderResults(channel, recentItems, videoStats);
+
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('checkBtn').disabled = false;
+    }
+  }
+
+  function setStep(msg) {
+    document.getElementById('loadingSteps').textContent = msg;
+  }
+
+  function showError(msg) {
+    document.getElementById('loading').classList.remove('active');
+    const ep = document.getElementById('errorPanel');
+    ep.classList.add('active');
+    ep.innerHTML = `
+      <div class="error-box">
+        <h3>Analysis Failed</h3>
+        <p>${msg}</p>
+        <p>Common fixes:</p>
+        <p>• Check your API key is correct and YouTube Data API v3 is enabled in Google Cloud Console<br>
+        • Check the channel handle/URL is correct<br>
+        • Make sure there are no spaces in the API key</p>
+        <code>${msg}</code>
+        <p style="margin-top:12px">Need a new API key? <a href="https://console.cloud.google.com/" target="_blank" style="color:var(--green)">console.cloud.google.com</a></p>
+      </div>
+    `;
+  }
+
+  // ── Render results ──
+  function renderResults(channel, items, videoStats) {
+    const sn = channel.snippet;
+    const st = channel.statistics;
+    const status = channel.status;
+
+    const subs       = parseInt(st.subscriberCount) || 0;
+    const totalViews = parseInt(st.viewCount) || 0;
+    const videoCount = parseInt(st.videoCount) || 0;
+    const hiddenSubs = st.hiddenSubscriberCount;
+    const createdAt  = sn.publishedAt;
+    const channelAge = daysSince(createdAt);
+    const mfk        = status.madeForKids;
+    const selfMfk    = status.selfDeclaredMadeForKids;
+
+    // Upload cadence from recent videos
+    const sortedItems = [...items].sort((a,b) => new Date(b.snippet.publishedAt) - new Date(a.snippet.publishedAt));
+    let uploadCadence = null, daysBetween = null;
+    if (sortedItems.length >= 2) {
+      const gaps = [];
+      for (let i = 0; i < Math.min(sortedItems.length-1, 10); i++) {
+        gaps.push(daysSince(sortedItems[i+1].snippet.publishedAt) - daysSince(sortedItems[i].snippet.publishedAt));
+      }
+      daysBetween = Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length);
+      if (daysBetween <= 3)       uploadCadence = 'Multiple/week';
+      else if (daysBetween <= 8)  uploadCadence = 'Weekly';
+      else if (daysBetween <= 18) uploadCadence = 'Fortnightly';
+      else if (daysBetween <= 40) uploadCadence = 'Monthly';
+      else                        uploadCadence = 'Irregular';
+    }
+
+    // Days since last upload
+    const lastUpload = sortedItems.length > 0 ? daysSince(sortedItems[0].snippet.publishedAt) : null;
+
+    // Video stats
+    const avgViews = videoStats.length > 0
+      ? Math.round(videoStats.reduce((a,v)=>a+parseInt(v.statistics?.viewCount||0),0)/videoStats.length)
+      : null;
+
+    const mfkVideos = videoStats.filter(v => v.status?.madeForKids).length;
+    const mfkPct    = videoStats.length > 0 ? Math.round(mfkVideos/videoStats.length*100) : null;
+
+    // Avg views per sub ratio
+    const engagementRatio = subs > 0 && avgViews !== null ? (avgViews/subs*100).toFixed(1) : null;
+
+    // ── Score calculation ──
+    let score = 50;
+    const signals = [];
+
+    // MFK status
+    if (mfk === true) {
+      score += 10;
+      signals.push({ name:'Made for Kids Status', val:'Compliant', dot:'dot-green', sub:'Channel correctly designated as Made for Kids. COPPA status clear.', bar:90, barColor:'var(--green)' });
+    } else if (mfk === false && selfMfk === false) {
+      score -= 5;
+      signals.push({ name:'Made for Kids Status', val:'Not Set', dot:'dot-amber', sub:'Channel is NOT marked as Made for Kids. If targeting 0–6 this is a COPPA compliance risk and will affect RPM significantly.', bar:20, barColor:'var(--amber)' });
+    } else {
+      signals.push({ name:'Made for Kids Status', val:'Mixed', dot:'dot-amber', sub:'Made for Kids status is inconsistent across the channel. Review individual video designations.', bar:50, barColor:'var(--amber)' });
+    }
+
+    // Subscriber count
+    if (hiddenSubs) {
+      signals.push({ name:'Subscriber Count', val:'Hidden', dot:'dot-grey', sub:'Channel has hidden subscriber count — common for privacy reasons. Cannot benchmark.', bar:50, barColor:'var(--muted)' });
+    } else if (subs >= 1000000) {
+      score += 15;
+      signals.push({ name:'Subscriber Count', val:fmt(subs), dot:'dot-green', sub:'Strong audience base. Well above the threshold for meaningful L&M conversations.', bar:95, barColor:'var(--green)' });
+    } else if (subs >= 100000) {
+      score += 10;
+      signals.push({ name:'Subscriber Count', val:fmt(subs), dot:'dot-green', sub:'Healthy subscriber base. Broadcaster pre-sale conversations become credible at this scale.', bar:70, barColor:'var(--green)' });
+    } else if (subs >= 10000) {
+      score += 5;
+      signals.push({ name:'Subscriber Count', val:fmt(subs), dot:'dot-amber', sub:'Growing but early stage. Strong content cadence needed to accelerate growth.', bar:40, barColor:'var(--amber)' });
+    } else {
+      score -= 5;
+      signals.push({ name:'Subscriber Count', val:fmt(subs), dot:'dot-red', sub:'Early stage channel. Focus on content quality and cadence before monetisation conversations.', bar:15, barColor:'var(--red)' });
+    }
+
+    // Upload cadence
+    if (uploadCadence) {
+      if (uploadCadence === 'Multiple/week' || uploadCadence === 'Weekly') {
+        score += 12;
+        signals.push({ name:'Upload Cadence', val:uploadCadence, dot:'dot-green', sub:`Posting every ~${daysBetween} days. Consistent cadence — algorithm rewards this directly.`, bar:85, barColor:'var(--green)' });
+      } else if (uploadCadence === 'Fortnightly') {
+        score += 5;
+        signals.push({ name:'Upload Cadence', val:uploadCadence, dot:'dot-amber', sub:`Posting every ~${daysBetween} days. Acceptable but algorithm favours tighter cadence for kids content.`, bar:55, barColor:'var(--amber)' });
+      } else if (uploadCadence === 'Monthly') {
+        score -= 5;
+        signals.push({ name:'Upload Cadence', val:uploadCadence, dot:'dot-amber', sub:`Posting every ~${daysBetween} days. Too infrequent for algorithmic momentum. Consider batching production.`, bar:35, barColor:'var(--amber)' });
+      } else {
+        score -= 10;
+        signals.push({ name:'Upload Cadence', val:'Irregular', dot:'dot-red', sub:`Inconsistent upload schedule. Algorithm actively penalises unpredictability for kids channels.`, bar:15, barColor:'var(--red)' });
+      }
+    }
+
+    // Last upload recency
+    if (lastUpload !== null) {
+      if (lastUpload <= 7) {
+        score += 5;
+        signals.push({ name:'Last Upload', val:`${lastUpload}d ago`, dot:'dot-green', sub:'Channel is actively posting. Good freshness signal.', bar:90, barColor:'var(--green)' });
+      } else if (lastUpload <= 21) {
+        signals.push({ name:'Last Upload', val:`${lastUpload}d ago`, dot:'dot-amber', sub:'Recent but not current week. Monitor closely.', bar:60, barColor:'var(--amber)' });
+      } else if (lastUpload <= 60) {
+        score -= 5;
+        signals.push({ name:'Last Upload', val:`${lastUpload}d ago`, dot:'dot-amber', sub:'No uploads in 3+ weeks. Channel momentum is declining.', bar:35, barColor:'var(--amber)' });
+      } else {
+        score -= 12;
+        signals.push({ name:'Last Upload', val:`${lastUpload}d ago`, dot:'dot-red', sub:`No uploads in ${Math.round(lastUpload/30)} months. Channel appears inactive — algorithm will have deprioritised it significantly.`, bar:5, barColor:'var(--red)' });
+      }
+    }
+
+    // Avg views
+    if (avgViews !== null) {
+      if (avgViews >= 100000) {
+        score += 12;
+        signals.push({ name:'Avg Views / Video', val:fmt(avgViews), dot:'dot-green', sub:'Strong per-video performance. Content is resonating and being surfaced algorithmically.', bar:90, barColor:'var(--green)' });
+      } else if (avgViews >= 10000) {
+        score += 7;
+        signals.push({ name:'Avg Views / Video', val:fmt(avgViews), dot:'dot-green', sub:'Solid per-video performance. Growing audience engagement.', bar:65, barColor:'var(--green)' });
+      } else if (avgViews >= 1000) {
+        score += 2;
+        signals.push({ name:'Avg Views / Video', val:fmt(avgViews), dot:'dot-amber', sub:'Modest per-video performance. Review content hooks and thumbnail strategy.', bar:35, barColor:'var(--amber)' });
+      } else {
+        score -= 5;
+        signals.push({ name:'Avg Views / Video', val:fmt(avgViews), dot:'dot-red', sub:'Low per-video views. Content discovery may be suppressed — review MFK designation and thumbnail quality.', bar:15, barColor:'var(--red)' });
+      }
+    }
+
+    // Engagement ratio
+    if (engagementRatio !== null && !hiddenSubs) {
+      const ratio = parseFloat(engagementRatio);
+      if (ratio >= 30) {
+        score += 8;
+        signals.push({ name:'View/Sub Ratio', val:engagementRatio+'%', dot:'dot-green', sub:'Strong engagement ratio — your subscribers are actually watching. Healthy signal for algorithm.', bar:85, barColor:'var(--green)' });
+      } else if (ratio >= 10) {
+        score += 4;
+        signals.push({ name:'View/Sub Ratio', val:engagementRatio+'%', dot:'dot-amber', sub:'Average engagement ratio. Some subscribers may be inactive — focus on re-engagement hooks.', bar:50, barColor:'var(--amber)' });
+      } else {
+        score -= 4;
+        signals.push({ name:'View/Sub Ratio', val:engagementRatio+'%', dot:'dot-red', sub:'Low engagement ratio — subscribed audience is not converting to views. Review notification strategy and content consistency.', bar:20, barColor:'var(--red)' });
+      }
+    }
+
+    // MFK consistency across videos
+    if (mfkPct !== null && videoStats.length >= 5) {
+      if (mfkPct >= 90) {
+        score += 5;
+        signals.push({ name:'MFK Video Consistency', val:mfkPct+'% of videos', dot:'dot-green', sub:'Consistent Made for Kids designation across recent uploads. Clean COPPA signal.', bar:mfkPct, barColor:'var(--green)' });
+      } else if (mfkPct >= 50) {
+        score -= 5;
+        signals.push({ name:'MFK Video Consistency', val:mfkPct+'% of videos', dot:'dot-amber', sub:'Mixed Made for Kids designation. Inconsistency creates COPPA exposure and confused ad targeting. Audit all videos.', bar:mfkPct, barColor:'var(--amber)' });
+      } else {
+        score -= 10;
+        signals.push({ name:'MFK Video Consistency', val:mfkPct+'% of videos', dot:'dot-red', sub:'Most videos NOT marked Made for Kids. If this is a 0–6 channel this is a serious COPPA compliance issue.', bar:mfkPct, barColor:'var(--red)' });
+      }
+    }
+
+    score = Math.min(Math.max(score, 8), 96);
+    const scoreColor = score >= 65 ? 'var(--green)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
+    const scoreLabel = score >= 65 ? 'Healthy' : score >= 40 ? 'Needs Work' : 'Critical';
+
+    // ── Recommendations ──
+    const recs = [];
+
+    if (mfk === false) recs.push({ p:'high', t:'Review Made for Kids designation', b:'If this channel targets 0–6 audiences it MUST be designated as Made for Kids. Not doing so is a COPPA violation with FTC enforcement risk. Go to YouTube Studio → Channel → Audience.' });
+    if (mfkPct !== null && mfkPct < 90 && mfkPct > 0) recs.push({ p:'high', t:'Audit individual video MFK settings', b:'Some videos have inconsistent Made for Kids status. Each video must be individually reviewed in YouTube Studio. Mixed designation is a legal and revenue risk.' });
+    if (uploadCadence === 'Irregular' || uploadCadence === 'Monthly') recs.push({ p:'high', t:'Establish a fixed upload schedule', b:'Commit to one upload per week minimum, same day. The algorithm rewards predictability for kids channels above almost everything else. Batch-produce if needed.' });
+    if (lastUpload !== null && lastUpload > 30) recs.push({ p:'high', t:'Resume uploading immediately', b:`${Math.round(lastUpload/30)} month${Math.round(lastUpload/30)>1?'s':''} without an upload means significant algorithmic de-prioritisation. Even one upload this week sends a re-activation signal.` });
+    if (avgViews !== null && avgViews < 5000 && subs > 10000) recs.push({ p:'med', t:'Diagnose low view-to-subscriber conversion', b:'Your subscribers are not converting to views on new uploads. Check notification settings, thumbnail quality, and whether opening hooks are strong enough to hold a 3-year-old audience.' });
+    if (subs < 100000) recs.push({ p:'med', t:'Build a Shorts strategy', b:'Shorts are the highest-ROI discovery mechanism on YouTube right now for 0–6 content. Repurpose your 5 strongest character moments as vertical clips. Zero additional production budget.' });
+    if (!recs.some(r => r.t.includes('Shopping'))) recs.push({ p:'low', t:'Assess YouTube Shopping readiness', b:'At any meaningful scale (10k+ subscribers), YouTube Shopping integration with a print-on-demand partner (Printful, Gelato) can add a merchandise revenue layer with no upfront cost.' });
+
+    // ── Build HTML ──
+    const thumbHtml = sn.thumbnails?.medium?.url
+      ? `<img class="channel-thumb" src="${sn.thumbnails.medium.url}" alt="${sn.title}">`
+      : `<div class="channel-thumb-placeholder">📺</div>`;
+
+    const circumference = 283;
+    const dashOffset = circumference - (score/100)*circumference;
+
+    const badgesHtml = [
+      mfk === true  ? `<span class="badge badge-green">✓ Made for Kids</span>` : '',
+      mfk === false ? `<span class="badge badge-red">✕ Not Made for Kids</span>` : '',
+      mfk === null  ? `<span class="badge badge-amber">? MFK Unknown</span>` : '',
+      sn.country    ? `<span class="badge badge-grey">${sn.country}</span>` : '',
+      channelAge > 0 ? `<span class="badge badge-grey">Est. ${fmtDate(createdAt)}</span>` : '',
+    ].filter(Boolean).join('');
+
+    const metricsHtml = signals.map(m => `
+      <div class="metric-card">
+        <div class="metric-top">
+          <div class="metric-name">${m.name}</div>
+          <div class="metric-dot ${m.dot}"></div>
+        </div>
+        <div class="metric-val" style="color:${m.barColor}">${m.val}</div>
+        <div class="metric-sub">${m.sub}</div>
+        <div class="metric-bar"><div class="metric-bar-fill" style="background:${m.barColor}" data-target="${m.bar}%"></div></div>
+      </div>
+    `).join('');
+
+    const recentHtml = sortedItems.slice(0,10).map((item, i) => {
+      const vs = videoStats.find(v => v.id === item.contentDetails?.videoId);
+      const views = vs ? fmt(vs.statistics?.viewCount||0) : '—';
+      const isMfk = vs?.status?.madeForKids;
+      const mfkBadge = isMfk === true
+        ? `<span class="video-mfk badge badge-green">MFK</span>`
+        : isMfk === false
+        ? `<span class="video-mfk badge badge-red">NOT MFK</span>`
+        : `<span class="video-mfk badge badge-grey">?</span>`;
+      return `
+        <div class="video-row">
+          <span class="video-num">${i+1}</span>
+          <span class="video-title">${item.snippet?.title || 'Untitled'}</span>
+          <span class="video-date">${fmtDate(item.snippet?.publishedAt)}</span>
+          <span class="video-views">${views} views</span>
+          ${mfkBadge}
+        </div>
+      `;
+    }).join('');
+
+    const recsHtml = recs.map((r,i) => `
+      <div class="rec-item" style="animation-delay:${i*0.08}s">
+        <span class="rec-priority p-${r.p}">${r.p.toUpperCase()}</span>
+        <div class="rec-body"><h4>${r.t}</h4><p>${r.b}</p></div>
+      </div>
+    `).join('');
+
+    const r = document.getElementById('results');
+    r.classList.add('active');
+    r.innerHTML = `
+      <div class="channel-hero">
+        ${thumbHtml}
+        <div class="channel-info">
+          <div class="channel-name">${sn.title}</div>
+          <div class="channel-meta">${sn.customUrl || ''} · ${fmt(videoCount)} videos</div>
+          <div class="channel-badges">${badgesHtml}</div>
+        </div>
+        <div class="overall-score">
+          <div class="score-ring">
+            <svg viewBox="0 0 100 100">
+              <circle class="track" cx="50" cy="50" r="45"/>
+              <circle class="fill" cx="50" cy="50" r="45" stroke="${scoreColor}" id="scoreFill" style="stroke-dashoffset:${circumference}"/>
+            </svg>
+            <div class="score-inner">
+              <div class="num" style="color:${scoreColor}">${score}</div>
+              <div class="lbl">${scoreLabel}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-key">Subscribers</div>
+          <div class="stat-val">${hiddenSubs ? 'Hidden' : fmt(subs)}</div>
+          <div class="stat-sub">${hiddenSubs ? 'Channel hides count' : 'Public count'}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-key">Total Views</div>
+          <div class="stat-val">${fmt(totalViews)}</div>
+          <div class="stat-sub">All-time channel views</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-key">Videos Published</div>
+          <div class="stat-val">${fmt(videoCount)}</div>
+          <div class="stat-sub">Total uploads</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-key">Avg Views / Video</div>
+          <div class="stat-val">${avgViews !== null ? fmt(avgViews) : '—'}</div>
+          <div class="stat-sub">Last 20 videos</div>
+        </div>
+      </div>
+
+      <div class="section-title">Signal Analysis</div>
+      <div class="metrics-grid">${metricsHtml}</div>
+
+      ${recentHtml ? `
+        <div class="recent-section">
+          <div class="section-title">Recent Uploads</div>
+          <div class="video-list">${recentHtml}</div>
+        </div>
+      ` : ''}
+
+      <div class="section-title">Recommendations</div>
+      ${recsHtml}
+
+      <div class="data-source">
+        <strong>Data source:</strong> YouTube Data API v3 (public data only) · Channel ID: ${channel.id} ·
+        Analysed: ${new Date().toLocaleString('en-GB')} ·
+        <strong>Not available via public API:</strong> RPM, watch duration, retention rate, impressions, CTR — these require OAuth authentication by the channel owner.
+      </div>
+    `;
+
+    // Animate score ring and bars
+    setTimeout(() => {
+      const fill = document.getElementById('scoreFill');
+      if (fill) fill.style.strokeDashoffset = dashOffset;
+      document.querySelectorAll('.metric-bar-fill').forEach(b => { b.style.width = b.dataset.target; });
+    }, 100);
+  }
+</script>
+</body>
+</html>
