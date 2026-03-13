@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animation Tax Relief Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #D62B2B;
+    --blue: #1B4DB8;
+    --yellow: #F2C200;
+    --black: #0C0C0C;
+    --white: #F8F7F2;
+    --grey: #E8E6DF;
+    --mid-grey: #9E9B93;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--white);
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--black);
+    min-height: 100vh;
+  }
+
+  /* DE STIJL HEADER */
+  .masthead {
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    grid-template-rows: auto;
+    border-bottom: 3px solid var(--black);
+  }
+
+  .mast-left-bar {
+    background: var(--red);
+    grid-row: 1;
+  }
+
+  .mast-content {
+    padding: 36px 44px;
+    border-right: 3px solid var(--black);
+  }
+
+  .mast-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--mid-grey);
+    margin-bottom: 12px;
+  }
+
+  .mast-content h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 6vw, 72px);
+    letter-spacing: 1px;
+    line-height: 0.95;
+    color: var(--black);
+  }
+
+  .mast-content h1 .accent { color: var(--red); }
+
+  .mast-right {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    width: 160px;
+  }
+
+  .mast-yellow { background: var(--yellow); }
+  .mast-blue { background: var(--blue); }
+
+  /* LAYOUT */
+  .app-body {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    min-height: calc(100vh - 140px);
+  }
+
+  /* LEFT */
+  .calc-inputs {
+    border-right: 3px solid var(--black);
+    padding: 40px 36px;
+  }
+
+  .section-head {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 24px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--grey);
+  }
+
+  .field {
+    margin-bottom: 22px;
+  }
+
+  .field label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--black);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .field .hint {
+    font-size: 12px;
+    color: var(--mid-grey);
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  input[type="number"], input[type="range"] {
+    width: 100%;
+    outline: none;
+  }
+
+  input[type="number"] {
+    padding: 12px 14px;
+    border: 2px solid var(--black);
+    background: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--black);
+    transition: border-color 0.15s;
+  }
+
+  input[type="number"]:focus { border-color: var(--blue); }
+
+  .range-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--grey);
+    border: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--blue);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--black);
+  }
+
+  .range-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    width: 48px;
+    text-align: right;
+    color: var(--blue);
+  }
+
+  /* RADIO GROUPS */
+  .radio-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .radio-item {
+    padding: 10px 12px;
+    border: 2px solid var(--grey);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .radio-item:hover { border-color: var(--black); }
+  .radio-item.active { border-color: var(--blue); background: rgba(27,77,184,0.06); }
+  .radio-item input { display: none; }
+  .radio-item .r-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .radio-item .r-sub { font-size: 11px; color: var(--mid-grey); margin-top: 2px; }
+
+  .calc-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 12px;
+  }
+
+  .calc-btn:hover { background: var(--blue); }
+
+  /* RIGHT PANEL */
+  .calc-output {
+    padding: 40px 44px;
+    background: var(--white);
+  }
+
+  .output-empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    opacity: 0.25;
+    gap: 20px;
+  }
+
+  .mondrian-mini {
+    display: grid;
+    grid-template-columns: 40px 20px 40px;
+    grid-template-rows: 40px 20px 20px;
+    gap: 4px;
+    width: 104px;
+  }
+
+  .mm-r { background: var(--red); }
+  .mm-b { background: var(--blue); }
+  .mm-y { background: var(--yellow); }
+  .mm-k { background: var(--black); }
+  .mm-w { background: var(--grey); }
+
+  .output-empty p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    line-height: 1.8;
+  }
+
+  /* RESULT DISPLAY */
+  .result-display { display: none; }
+  .result-display.visible { display: block; }
+
+  /* BIG NUMBER */
+  .result-hero {
+    background: var(--black);
+    color: var(--white);
+    padding: 32px 36px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 8px; height: 100%;
+    background: var(--yellow);
+  }
+
+  .rh-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 8px;
+    padding-left: 20px;
+  }
+
+  .rh-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 80px);
+    line-height: 1;
+    color: var(--white);
+    padding-left: 20px;
+  }
+
+  .rh-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    padding-left: 20px;
+    margin-top: 6px;
+  }
+
+  /* BREAKDOWN */
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--black);
+    border: 2px solid var(--black);
+    margin-bottom: 24px;
+  }
+
+  .breakdown-cell {
+    background: var(--white);
+    padding: 18px 20px;
+  }
+
+  .bc-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--mid-grey);
+    margin-bottom: 8px;
+  }
+
+  .bc-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--black);
+    line-height: 1;
+  }
+
+  .bc-value.positive { color: var(--blue); }
+  .bc-value.negative { color: var(--red); }
+  .bc-value.highlight { color: var(--red); font-size: 24px; }
+
+  /* VISUAL BAR */
+  .visual-bar {
+    border: 2px solid var(--black);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .vb-header {
+    background: var(--black);
+    color: var(--white);
+    padding: 8px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .vb-bar {
+    display: flex;
+    height: 40px;
+  }
+
+  .vb-seg {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: flex 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .vb-seg span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 0 4px;
+  }
+
+  /* CULTURAL TEST */
+  .cultural-section {
+    border: 2px solid var(--black);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .cs-header {
+    background: var(--blue);
+    padding: 12px 18px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--white);
+  }
+
+  .cs-body { padding: 18px; }
+
+  .ct-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--grey);
+  }
+
+  .ct-row:last-child { border-bottom: none; }
+
+  .ct-name {
+    font-size: 13px;
+    color: var(--black);
+  }
+
+  .ct-pts {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .ct-pass { color: var(--blue); }
+  .ct-warn { color: var(--yellow); }
+  .ct-fail { color: var(--red); }
+
+  .ct-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0 0;
+    margin-top: 8px;
+    border-top: 2px solid var(--black);
+  }
+
+  .ct-total .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .ct-total .score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 1px;
+  }
+
+  /* NOTES */
+  .notes-section {
+    border: 2px solid var(--grey);
+    padding: 18px 20px;
+  }
+
+  .notes-section h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--mid-grey);
+    margin-bottom: 12px;
+  }
+
+  .note-item {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--grey);
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  .note-item:last-child { border-bottom: none; }
+  .note-item .ni { flex-shrink: 0; color: var(--mid-grey); font-size: 10px; margin-top: 3px; }
+
+  @media (max-width: 900px) {
+    .app-body { grid-template-columns: 1fr; }
+    .calc-inputs { border-right: none; border-bottom: 3px solid var(--black); }
+    .mast-right { display: none; }
+    .masthead { grid-template-columns: 8px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="mast-left-bar"></div>
+  <div class="mast-content">
+    <div class="mast-tag">Animation Finance Tool — 05</div>
+    <h1>UK Animation<br><span class="accent">Tax Relief</span><br>Calculator</h1>
+  </div>
+  <div class="mast-right">
+    <div class="mast-yellow"></div>
+    <div class="mast-blue"></div>
+  </div>
+</div>
+
+<div class="app-body">
+  <div class="calc-inputs">
+    <div class="section-head">Project Inputs</div>
+
+    <div class="field">
+      <label>Total Production Budget (£)</label>
+      <input type="number" id="totalBudget" value="2000000" step="100000" oninput="updateCalc()">
+    </div>
+
+    <div class="field">
+      <label>UK Spend Percentage</label>
+      <div class="hint">What % of the budget will be spent in the UK on qualifying activities?</div>
+      <div class="range-row">
+        <input type="range" id="ukSpendPct" min="0" max="100" value="70" oninput="updateRange(); updateCalc()">
+        <span class="range-val" id="rangeDisplay">70%</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Production Type</label>
+      <div class="radio-group">
+        <label class="radio-item active" onclick="selectRadio(this, 'type', 'animation')">
+          <input type="radio" name="type" value="animation" checked>
+          <div class="r-label">Animation</div>
+          <div class="r-sub">Standard ATR 25%</div>
+        </label>
+        <label class="radio-item" onclick="selectRadio(this, 'type', 'children')">
+          <input type="radio" name="type" value="children">
+          <div class="r-label">Children's Live</div>
+          <div class="r-sub">HETV relief applies</div>
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Cultural Test Status</label>
+      <div class="hint">Have you assessed your BFI Cultural Test score? (Min 18/31 required)</div>
+      <div class="radio-group">
+        <label class="radio-item active" onclick="selectRadio(this, 'cultural', 'likely')">
+          <input type="radio" name="cultural" checked>
+          <div class="r-label">Likely to pass</div>
+          <div class="r-sub">UK story/talent</div>
+        </label>
+        <label class="radio-item" onclick="selectRadio(this, 'cultural', 'unsure')">
+          <input type="radio" name="cultural">
+          <div class="r-label">Unsure</div>
+          <div class="r-sub">Need to assess</div>
+        </label>
+        <label class="radio-item" onclick="selectRadio(this, 'cultural', 'borderline')">
+          <input type="radio" name="cultural">
+          <div class="r-label">Borderline</div>
+          <div class="r-sub">Under 22/31</div>
+        </label>
+        <label class="radio-item" onclick="selectRadio(this, 'cultural', 'international')">
+          <input type="radio" name="cultural">
+          <div class="r-label">International IP</div>
+          <div class="r-sub">Co-production</div>
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Number of Episodes</label>
+      <input type="number" id="episodes" value="52" min="1" step="1" oninput="updateCalc()">
+    </div>
+
+    <div class="field">
+      <label>Production Company Type</label>
+      <div class="radio-group">
+        <label class="radio-item active" onclick="selectRadio(this, 'company', 'independent')">
+          <input type="radio" name="company" checked>
+          <div class="r-label">Independent</div>
+          <div class="r-sub">UK registered</div>
+        </label>
+        <label class="radio-item" onclick="selectRadio(this, 'company', 'subsidiary')">
+          <input type="radio" name="company">
+          <div class="r-label">Subsidiary</div>
+          <div class="r-sub">Part of larger group</div>
+        </label>
+      </div>
+    </div>
+
+    <button class="calc-btn" onclick="updateCalc()">CALCULATE RELIEF</button>
+  </div>
+
+  <div class="calc-output">
+    <div class="output-empty" id="emptyOut">
+      <div class="mondrian-mini">
+        <div class="mm-r"></div>
+        <div class="mm-b" style="grid-column:2;grid-row:1/3"></div>
+        <div class="mm-y"></div>
+        <div class="mm-k" style="grid-column:1"></div>
+        <div class="mm-w"></div>
+        <div class="mm-y" style="grid-column:3;grid-row:2/4"></div>
+        <div class="mm-r"></div>
+        <div class="mm-b"></div>
+      </div>
+      <p>Enter your project details<br>to calculate your ATR credit</p>
+    </div>
+
+    <div class="result-display" id="resultDisplay"></div>
+  </div>
+</div>
+
+<script>
+  const state = { type: 'animation', cultural: 'likely', company: 'independent' };
+
+  function selectRadio(el, key, val) {
+    const group = el.closest('.radio-group');
+    group.querySelectorAll('.radio-item').forEach(r => r.classList.remove('active'));
+    el.classList.add('active');
+    state[key] = val;
+    updateCalc();
+  }
+
+  function updateRange() {
+    const v = document.getElementById('ukSpendPct').value;
+    document.getElementById('rangeDisplay').textContent = v + '%';
+  }
+
+  function formatGBP(n) {
+    if (n >= 1000000) return '£' + (n/1000000).toFixed(2) + 'm';
+    if (n >= 1000) return '£' + Math.round(n/1000).toLocaleString() + 'k';
+    return '£' + Math.round(n).toLocaleString();
+  }
+
+  function updateCalc() {
+    const budget = parseFloat(document.getElementById('totalBudget').value) || 0;
+    const ukPct = parseFloat(document.getElementById('ukSpendPct').value) / 100;
+    const episodes = parseInt(document.getElementById('episodes').value) || 1;
+    const budgetPerEp = budget / episodes;
+
+    // UK qualifying expenditure
+    const ukSpend = budget * ukPct;
+
+    // ATR rate: 25% for animation
+    const atrRate = 0.25;
+    const taxCredit = ukSpend * atrRate;
+
+    // Effective % of total budget
+    const effectivePct = (taxCredit / budget * 100).toFixed(1);
+
+    // Net cost after relief
+    const netCost = budget - taxCredit;
+
+    // Budget per episode figures
+    const taxPerEp = taxCredit / episodes;
+    const netPerEp = netCost / episodes;
+
+    // Cultural test
+    const culturalItems = getCulturalItems();
+    const ctTotal = culturalItems.reduce((sum, i) => sum + i.pts, 0);
+
+    document.getElementById('emptyOut').style.display = 'none';
+    const rd = document.getElementById('resultDisplay');
+    rd.classList.add('visible');
+
+    const qualified = ukPct >= 0.25 && state.cultural !== 'international';
+    const creditColor = qualified ? 'var(--blue)' : 'var(--mid-grey)';
+
+    const segQualify = Math.round(ukPct * 100);
+    const segNonUK = 100 - segQualify;
+    const segRelief = Math.round(segQualify * atrRate);
+    const segNet = 100 - segRelief;
+
+    rd.innerHTML = `
+      <div class="result-hero">
+        <div class="rh-label">Estimated Tax Credit</div>
+        <div class="rh-amount">${qualified ? formatGBP(taxCredit) : 'Eligibility uncertain'}</div>
+        <div class="rh-sub">${qualified ? `${effectivePct}% of total production budget recovered via ATR` : 'Review cultural test and UK spend requirements below'}</div>
+      </div>
+
+      <div class="breakdown-grid">
+        <div class="breakdown-cell">
+          <div class="bc-label">Total Budget</div>
+          <div class="bc-value">${formatGBP(budget)}</div>
+        </div>
+        <div class="breakdown-cell">
+          <div class="bc-label">UK Qualifying Spend</div>
+          <div class="bc-value positive">${formatGBP(ukSpend)}</div>
+        </div>
+        <div class="breakdown-cell">
+          <div class="bc-label">ATR Credit (25%)</div>
+          <div class="bc-value highlight">${qualified ? formatGBP(taxCredit) : '—'}</div>
+        </div>
+        <div class="breakdown-cell">
+          <div class="bc-label">Net Production Cost</div>
+          <div class="bc-value">${qualified ? formatGBP(netCost) : formatGBP(budget)}</div>
+        </div>
+        <div class="breakdown-cell">
+          <div class="bc-label">Per Episode Budget</div>
+          <div class="bc-value">${formatGBP(budgetPerEp)}</div>
+        </div>
+        <div class="breakdown-cell">
+          <div class="bc-label">Credit Per Episode</div>
+          <div class="bc-value positive">${qualified ? formatGBP(taxPerEp) : '—'}</div>
+        </div>
+      </div>
+
+      <div class="visual-bar">
+        <div class="vb-header">Budget Breakdown</div>
+        <div class="vb-bar">
+          <div class="vb-seg" style="flex:${segNonUK};background:var(--grey)">
+            ${segNonUK > 8 ? `<span>Non-UK ${segNonUK}%</span>` : ''}
+          </div>
+          <div class="vb-seg" style="flex:${segQualify - segRelief};background:#D4E3FF">
+            ${(segQualify - segRelief) > 10 ? `<span>UK Net ${segQualify - segRelief}%</span>` : ''}
+          </div>
+          <div class="vb-seg" style="flex:${segRelief};background:var(--blue)">
+            ${segRelief > 5 ? `<span style="color:white">ATR ${segRelief}%</span>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <div class="cultural-section">
+        <div class="cs-header">BFI Cultural Test — Estimated Score</div>
+        <div class="cs-body">
+          ${culturalItems.map(item => `
+            <div class="ct-row">
+              <span class="ct-name">${item.name}</span>
+              <span class="ct-pts ct-${item.status}">${item.pts > 0 ? '+' + item.pts : item.pts} pts</span>
+            </div>
+          `).join('')}
+          <div class="ct-total">
+            <span class="label">Estimated Total</span>
+            <span class="score" style="color:${ctTotal >= 18 ? 'var(--blue)' : ctTotal >= 14 ? 'var(--yellow)' : 'var(--red)'}">${ctTotal}/31 — ${ctTotal >= 18 ? 'PASS' : ctTotal >= 14 ? 'BORDERLINE' : 'LIKELY FAIL'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="notes-section">
+        <h3>Key Conditions & Notes</h3>
+        <div class="note-item"><span class="ni">01</span><span>Minimum 25% of core expenditure must be on goods, services or facilities in the UK. Below this threshold ATR cannot be claimed at all.</span></div>
+        <div class="note-item"><span class="ni">02</span><span>The production company must be UK tax resident and responsible for the animation. SPV structures are commonly used — ensure correct setup from day one.</span></div>
+        <div class="note-item"><span class="ni">03</span><span>ATR is claimed via Corporation Tax return — not immediately cashflowable. Many productions use a production loan against the expected credit to access the cash during production.</span></div>
+        <div class="note-item"><span class="ni">04</span><span>The Cultural Test requires a minimum of 18/31 points. Key point categories: British setting, UK lead characters, English language, UK talent (writer, director, cast), UK production company.</span></div>
+        <div class="note-item"><span class="ni">05</span><span>This calculator provides indicative estimates only. Actual ATR eligibility requires formal HMRC and BFI assessment. Always engage a specialist animation tax advisor before committing to a financing plan.</span></div>
+      </div>
+    `;
+  }
+
+  function getCulturalItems() {
+    const cultural = state.cultural;
+    const type = state.type;
+
+    let items = [];
+
+    if (cultural === 'likely') {
+      items = [
+        { name: 'A — UK/EEA Setting', pts: 4, status: 'pass' },
+        { name: 'A — UK/EEA Characters', pts: 4, status: 'pass' },
+        { name: 'A — English language', pts: 4, status: 'pass' },
+        { name: 'B — UK Director/Writer', pts: 3, status: 'pass' },
+        { name: 'B — UK Cast (leading roles)', pts: 4, status: 'pass' },
+        { name: 'C — UK production company', pts: 3, status: 'pass' },
+        { name: 'C — Produced in UK', pts: 2, status: 'warn' },
+      ];
+    } else if (cultural === 'unsure') {
+      items = [
+        { name: 'A — UK/EEA Setting', pts: 2, status: 'warn' },
+        { name: 'A — UK/EEA Characters', pts: 2, status: 'warn' },
+        { name: 'A — English language', pts: 4, status: 'pass' },
+        { name: 'B — UK Director/Writer', pts: 3, status: 'pass' },
+        { name: 'B — UK Cast (leading roles)', pts: 2, status: 'warn' },
+        { name: 'C — UK production company', pts: 3, status: 'pass' },
+        { name: 'C — Produced in UK', pts: 1, status: 'fail' },
+      ];
+    } else if (cultural === 'borderline') {
+      items = [
+        { name: 'A — UK/EEA Setting', pts: 0, status: 'fail' },
+        { name: 'A — UK/EEA Characters', pts: 0, status: 'fail' },
+        { name: 'A — English language', pts: 4, status: 'pass' },
+        { name: 'B — UK Director/Writer', pts: 3, status: 'pass' },
+        { name: 'B — UK Cast (leading roles)', pts: 4, status: 'pass' },
+        { name: 'C — UK production company', pts: 3, status: 'pass' },
+        { name: 'C — Produced in UK', pts: 2, status: 'warn' },
+      ];
+    } else {
+      items = [
+        { name: 'A — UK/EEA Setting', pts: 0, status: 'fail' },
+        { name: 'A — UK/EEA Characters', pts: 0, status: 'fail' },
+        { name: 'A — English language', pts: 4, status: 'pass' },
+        { name: 'B — UK Director/Writer', pts: 1, status: 'fail' },
+        { name: 'B — UK Cast (leading roles)', pts: 2, status: 'warn' },
+        { name: 'C — UK production company', pts: 3, status: 'pass' },
+        { name: 'C — Produced in UK', pts: 1, status: 'fail' },
+      ];
+    }
+    return items;
+  }
+
+  // Init
+  updateCalc();
+</script>
+</body>
+</html>

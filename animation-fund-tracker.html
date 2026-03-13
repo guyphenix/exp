@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animation Fund Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Space+Mono:wght@400;700&family=Mulish:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mustard: #D4A017;
+    --teal: #1A7B6B;
+    --coral: #E05A3A;
+    --navy: #1C2B4A;
+    --cream: #FBF5E6;
+    --lt-teal: #E8F5F2;
+    --lt-coral: #FDF0EB;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    font-family: 'Mulish', sans-serif;
+    color: var(--navy);
+    min-height: 100vh;
+  }
+
+  /* MID CENTURY HEADER */
+  header {
+    background: var(--navy);
+    position: relative;
+    overflow: hidden;
+    padding: 40px 48px 36px;
+  }
+
+  .header-geo {
+    position: absolute;
+    right: -30px;
+    top: -30px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: var(--mustard);
+    opacity: 0.15;
+  }
+
+  .header-geo2 {
+    position: absolute;
+    right: 80px;
+    bottom: -40px;
+    width: 120px;
+    height: 120px;
+    background: var(--teal);
+    opacity: 0.2;
+    transform: rotate(45deg);
+  }
+
+  .header-geo3 {
+    position: absolute;
+    left: 60%;
+    top: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--coral);
+    opacity: 0.2;
+  }
+
+  .header-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--mustard);
+    margin-bottom: 12px;
+  }
+
+  header h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: clamp(22px, 4vw, 42px);
+    color: var(--cream);
+    font-weight: 900;
+    line-height: 1.1;
+    max-width: 600px;
+    position: relative;
+  }
+
+  header p {
+    color: rgba(251,245,230,0.6);
+    font-size: 14px;
+    margin-top: 12px;
+    max-width: 500px;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  /* CONTROLS */
+  .controls {
+    background: var(--navy);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 20px 48px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-btn {
+    padding: 8px 18px;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--mustard);
+    border-color: var(--mustard);
+    color: var(--navy);
+  }
+
+  .search-box {
+    margin-left: auto;
+    position: relative;
+  }
+
+  .search-box input {
+    padding: 8px 16px 8px 36px;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: var(--cream);
+    font-family: 'Mulish', sans-serif;
+    font-size: 13px;
+    width: 220px;
+    outline: none;
+    border-radius: 2px;
+  }
+
+  .search-box input::placeholder { color: rgba(255,255,255,0.3); }
+  .search-box input:focus { border-color: var(--mustard); }
+
+  .search-box::before {
+    content: '⌕';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.4);
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 3px solid var(--navy);
+  }
+
+  .stat-box {
+    padding: 24px 32px;
+    border-right: 2px solid rgba(28,43,74,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-box:last-child { border-right: none; }
+
+  .stat-box::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+  }
+
+  .stat-box:nth-child(1)::before { background: var(--teal); }
+  .stat-box:nth-child(2)::before { background: var(--coral); }
+  .stat-box:nth-child(3)::before { background: var(--mustard); }
+  .stat-box:nth-child(4)::before { background: var(--navy); }
+
+  .stat-num {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+    margin-top: 6px;
+  }
+
+  /* FUND GRID */
+  .fund-grid {
+    padding: 32px 48px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  .fund-card {
+    border: 2px solid var(--navy);
+    background: white;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .fund-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 6px 6px 0 var(--navy);
+  }
+
+  .fund-card.open .card-status-bar { background: var(--teal); }
+  .fund-card.closed .card-status-bar { background: var(--coral); }
+  .fund-card.rolling .card-status-bar { background: var(--mustard); }
+
+  .card-status-bar {
+    height: 6px;
+    width: 100%;
+  }
+
+  .card-body {
+    padding: 20px 22px;
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+
+  .card-flag {
+    font-size: 28px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .card-status {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    font-weight: 700;
+  }
+
+  .fund-card.open .card-status { background: var(--lt-teal); color: var(--teal); }
+  .fund-card.closed .card-status { background: var(--lt-coral); color: var(--coral); }
+  .fund-card.rolling .card-status { background: #FFF8E0; color: #9A7200; }
+
+  .card-name {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    color: var(--navy);
+  }
+
+  .card-territory {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: #999;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .card-divider {
+    border: none;
+    border-top: 1px solid rgba(28,43,74,0.08);
+    margin: 14px 0;
+  }
+
+  .card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .meta-item {}
+
+  .meta-key {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 3px;
+  }
+
+  .meta-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .card-desc {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 14px;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tag {
+    padding: 3px 9px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: var(--cream);
+    border: 1px solid rgba(28,43,74,0.15);
+    color: var(--navy);
+  }
+
+  .deadline-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin-top: 12px;
+    font-size: 12px;
+  }
+
+  .fund-card.open .deadline-badge { background: var(--lt-teal); }
+  .fund-card.closed .deadline-badge { background: var(--lt-coral); }
+  .fund-card.rolling .deadline-badge { background: #FFF8E0; }
+
+  .deadline-badge .dl-icon { font-size: 14px; }
+  .deadline-badge .dl-text { font-family: 'Space Mono', monospace; font-size: 10px; }
+
+  .no-results {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 20px;
+    opacity: 0.4;
+  }
+
+  .no-results .nr-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .no-results p {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 768px) {
+    .controls { padding: 16px 20px; }
+    .fund-grid { padding: 20px; grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    header { padding: 28px 20px; }
+    .search-box { margin-left: 0; width: 100%; }
+    .search-box input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-geo"></div>
+  <div class="header-geo2"></div>
+  <div class="header-geo3"></div>
+  <div class="header-tag">Animation Finance Tool — 02</div>
+  <h1>European Fund<br>Tracker</h1>
+  <p>Live status of major animation funds across Europe and key co-production territories. Deadlines, eligibility and award ranges in one place.</p>
+</header>
+
+<div class="controls">
+  <button class="filter-btn active" onclick="filterFunds('all', this)">All Funds</button>
+  <button class="filter-btn" onclick="filterFunds('open', this)">Open Now</button>
+  <button class="filter-btn" onclick="filterFunds('rolling', this)">Rolling</button>
+  <button class="filter-btn" onclick="filterFunds('closed', this)">Closed</button>
+  <button class="filter-btn" onclick="filterFunds('uk', this)">🇬🇧 UK</button>
+  <button class="filter-btn" onclick="filterFunds('europe', this)">🇪🇺 Europe</button>
+  <button class="filter-btn" onclick="filterFunds('copro', this)">Co-Pro</button>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search funds..." oninput="searchFunds()">
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-box">
+    <div class="stat-num" id="statTotal">14</div>
+    <div class="stat-label">Funds Tracked</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num" id="statOpen" style="color:var(--teal)">7</div>
+    <div class="stat-label">Open Now</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num" id="statRolling" style="color:var(--mustard)">4</div>
+    <div class="stat-label">Rolling</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num" id="statClosed" style="color:var(--coral)">3</div>
+    <div class="stat-label">Closed / Upcoming</div>
+  </div>
+</div>
+
+<div class="fund-grid" id="fundGrid"></div>
+
+<script>
+const funds = [
+  {
+    id: 1, name: "BFI Young Audiences Content Fund", territory: "United Kingdom", flag: "🇬🇧",
+    status: "open", type: ["uk", "copro"],
+    award: "Up to £500k", deadline: "Rolling rounds — check BFI site",
+    desc: "Supports content for audiences under 18 across all platforms. Strong emphasis on underrepresented voices and distinctively British content. Animation eligible.",
+    tags: ["Animation", "0-18", "Public Value", "UK IP"],
+    link: "https://www.bfi.org.uk"
+  },
+  {
+    id: 2, name: "Canada Media Fund — Convergent Stream", territory: "Canada", flag: "🇨🇦",
+    status: "open", type: ["copro"],
+    award: "Up to 37.5% of budget", deadline: "August intake open now",
+    desc: "Primary fund for Canadian co-productions. Requires Canadian broadcaster licence and Canadian producer lead. Treaty co-production with UK qualifies. Children's content prioritised.",
+    tags: ["Animation", "Co-Pro", "Treaty", "Kids"],
+    link: "https://cmf-fmc.ca"
+  },
+  {
+    id: 3, name: "CNC — COSIP Children's Animation", territory: "France", flag: "🇫🇷",
+    status: "open", type: ["europe", "copro"],
+    award: "15-25% of French spend", deadline: "Continuous — quarterly assessment",
+    desc: "French national cinema centre funding tied to broadcaster presale from France Télévisions, TF1 or M6. French co-producer required. Dialogue-light content scores well.",
+    tags: ["Animation", "Co-Pro", "Broadcaster Tied", "EU"],
+    link: "https://www.cnc.fr"
+  },
+  {
+    id: 4, name: "Creative Europe — MEDIA", territory: "European Union", flag: "🇪🇺",
+    status: "open", type: ["europe", "copro"],
+    award: "€100k–€2m", deadline: "Development: Sept 2025 | Co-Pro: Oct 2025",
+    desc: "EU fund supporting development and production of European audiovisual works. Post-Brexit UK participation via Creative Europe Agreement. Animation particularly well supported.",
+    tags: ["Animation", "Development", "Production", "EU Treaty"],
+    link: "https://ec.europa.eu/programmes/creative-europe"
+  },
+  {
+    id: 5, name: "Screen Ireland — Animation Development", territory: "Ireland", flag: "🇮🇪",
+    status: "rolling", type: ["copro", "europe"],
+    award: "€25k–€200k development", deadline: "Rolling — monthly board",
+    desc: "Easiest first co-production partner for UK studios. Section 481 tax incentive adds 32% on Irish spend. English language removes creative friction. TG4 adds modest Irish language premium.",
+    tags: ["Animation", "Co-Pro", "Tax Incentive", "0-6"],
+    link: "https://www.screenireland.ie"
+  },
+  {
+    id: 6, name: "UK Animation Tax Relief (ATR)", territory: "United Kingdom", flag: "🇬🇧",
+    status: "rolling", type: ["uk"],
+    award: "25% of qualifying UK spend", deadline: "Claimed via HMRC — always open",
+    desc: "Non-negotiable for any UK animation production. Requires BFI Cultural Test pass (minimum 18/31 points). UK production company must be responsible. Essential to model from day one.",
+    tags: ["Tax Relief", "HMRC", "Always Open", "Core Tool"],
+    link: "https://www.bfi.org.uk/certification-funding/cultural-test-uk-films"
+  },
+  {
+    id: 7, name: "Nordic Film & TV Fund", territory: "Nordics", flag: "🇸🇪",
+    status: "open", type: ["europe", "copro"],
+    award: "Up to €500k per project", deadline: "March 2026 — open now",
+    desc: "Supports co-productions involving at least two Nordic countries plus international partners. SVT, NRK or YLE broadcaster attachment strengthens application significantly.",
+    tags: ["Co-Pro", "Animation", "Nordic", "Broadcaster"],
+    link: "https://www.nordiskfilmogtvfond.com"
+  },
+  {
+    id: 8, name: "Screen Australia — Production", territory: "Australia", flag: "🇦🇺",
+    status: "open", type: ["copro"],
+    award: "Up to AUD $2m", deadline: "Quarterly rounds — June deadline next",
+    desc: "Strong appetite for co-productions with UK via official treaty. ABC Kids broadcaster relationship significantly strengthens case. Nature and outdoor content performs well in assessment.",
+    tags: ["Animation", "Co-Pro", "Treaty", "ABC Kids"],
+    link: "https://www.screenaustralia.gov.au"
+  },
+  {
+    id: 9, name: "Flanders Audiovisual Fund (VAF)", territory: "Belgium", flag: "🇧🇪",
+    status: "open", type: ["europe", "copro"],
+    award: "Up to €500k", deadline: "Two rounds per year — next: May 2026",
+    desc: "Significant animation fund based in Belgium. Requires Belgian co-producer. Ketnet (VRT) broadcaster relationship helpful. Strong track record in international animation co-production.",
+    tags: ["Animation", "Co-Pro", "Belgium", "EU"],
+    link: "https://www.vaf.be"
+  },
+  {
+    id: 10, name: "ORF Film/Fernseh-Abkommen", territory: "Austria", flag: "🇦🇹",
+    status: "rolling", type: ["europe", "copro"],
+    award: "Variable — project by project", deadline: "Ongoing — requires ORF presale",
+    desc: "Austrian public broadcaster fund linked to ORF presale. German language or dialogue-light content preferred. Less well-known by UK producers — lower competition for funding.",
+    tags: ["Animation", "Co-Pro", "German Language", "EU"],
+    link: "https://orf.at"
+  },
+  {
+    id: 11, name: "Telefilm Canada — Co-Production", territory: "Canada", flag: "🇨🇦",
+    status: "closed", type: ["copro"],
+    award: "Tied to CMF", deadline: "Closed this round — reopens September 2026",
+    desc: "Works in tandem with CMF for major co-productions. Equity investment rather than grant. Requires significant Canadian creative input. Currently closed pending policy review.",
+    tags: ["Equity", "Co-Pro", "Canada", "Treaty"],
+    link: "https://telefilm.ca"
+  },
+  {
+    id: 12, name: "South West Screen / Creative England", territory: "United Kingdom", flag: "🇬🇧",
+    status: "closed", type: ["uk"],
+    award: "Up to £150k", deadline: "Closed — next round TBC 2026",
+    desc: "Regional UK fund for English productions. Currently under restructuring following Creative England consolidation. Watch for announcements. Historically strong for early-stage animation development.",
+    tags: ["Development", "Regional", "UK", "Early Stage"],
+    link: "https://www.creativeengland.co.uk"
+  },
+  {
+    id: 13, name: "MEDIA Slate Development", territory: "European Union", flag: "🇪🇺",
+    status: "open", type: ["europe"],
+    award: "€200k–€1m for slate", deadline: "Next deadline: June 2026",
+    desc: "For production companies with proven track record wanting to develop a slate of 3+ projects. Higher threshold but substantial funding. Particularly useful for mid-size studios.",
+    tags: ["Slate", "Development", "EU", "Track Record"],
+    link: "https://ec.europa.eu"
+  },
+  {
+    id: 14, name: "Wellcome Trust — Science Content", territory: "United Kingdom", flag: "🇬🇧",
+    status: "rolling", type: ["uk"],
+    award: "Up to £500k", deadline: "Rolling — science-led content only",
+    desc: "Often overlooked by animation producers. Strong appetite for science and health content for children. 0-6 content with genuine STEM curriculum integration has been funded here. Low competition.",
+    tags: ["Science", "STEM", "0-6", "Hidden Gem"],
+    link: "https://wellcome.org"
+  }
+];
+
+let currentFilter = 'all';
+let currentSearch = '';
+
+function filterFunds(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFunds();
+}
+
+function searchFunds() {
+  currentSearch = document.getElementById('searchInput').value.toLowerCase();
+  renderFunds();
+}
+
+function renderFunds() {
+  const grid = document.getElementById('fundGrid');
+  let filtered = funds.filter(f => {
+    const matchFilter = currentFilter === 'all' || f.status === currentFilter || f.type.includes(currentFilter);
+    const matchSearch = !currentSearch ||
+      f.name.toLowerCase().includes(currentSearch) ||
+      f.territory.toLowerCase().includes(currentSearch) ||
+      f.desc.toLowerCase().includes(currentSearch) ||
+      f.tags.some(t => t.toLowerCase().includes(currentSearch));
+    return matchFilter && matchSearch;
+  });
+
+  document.getElementById('statTotal').textContent = filtered.length;
+  document.getElementById('statOpen').textContent = filtered.filter(f => f.status === 'open').length;
+  document.getElementById('statRolling').textContent = filtered.filter(f => f.status === 'rolling').length;
+  document.getElementById('statClosed').textContent = filtered.filter(f => f.status === 'closed').length;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="no-results"><div class="nr-icon">◎</div><p>No funds match your search</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((f, i) => `
+    <div class="fund-card ${f.status}" style="animation: fadeUp 0.3s ${i * 0.05}s both">
+      <div class="card-status-bar"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <span class="card-flag">${f.flag}</span>
+              <div>
+                <div class="card-name">${f.name}</div>
+                <div class="card-territory">${f.territory}</div>
+              </div>
+            </div>
+          </div>
+          <span class="card-status">${f.status === 'rolling' ? 'Rolling' : f.status === 'open' ? '● Open' : '✕ Closed'}</span>
+        </div>
+
+        <hr class="card-divider">
+
+        <div class="card-meta">
+          <div class="meta-item">
+            <div class="meta-key">Award Range</div>
+            <div class="meta-val">${f.award}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-key">Type</div>
+            <div class="meta-val">${f.type.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ')}</div>
+          </div>
+        </div>
+
+        <p class="card-desc">${f.desc}</p>
+
+        <div class="card-tags">${f.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+
+        <div class="deadline-badge">
+          <span class="dl-icon">📅</span>
+          <span class="dl-text">${f.deadline}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+const style = document.createElement('style');
+style.textContent = `@keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }`;
+document.head.appendChild(style);
+
+renderFunds();
+</script>
+</body>
+</html>

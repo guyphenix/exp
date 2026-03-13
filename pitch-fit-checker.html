@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitch Fit Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #E8622A;
+    --purple: #5B3F8C;
+    --sand: #F5EDD6;
+    --warm-white: #FDFAF3;
+    --dark: #1E1A2E;
+    --mid: #4A4060;
+    --green: #3A8C5B;
+    --amber: #D4870A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--warm-white);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* DECORATIVE SHAPES */
+  .bg-shapes {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .shape-1 {
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: var(--sand);
+    opacity: 0.6;
+  }
+
+  .shape-2 {
+    position: absolute;
+    bottom: 10%;
+    left: -60px;
+    width: 200px; height: 200px;
+    background: var(--sand);
+    transform: rotate(45deg);
+    opacity: 0.4;
+  }
+
+  .shape-3 {
+    position: absolute;
+    top: 40%;
+    right: -40px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: var(--orange);
+    opacity: 0.08;
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 1;
+    padding: 48px 56px 40px;
+    border-bottom: 2px solid rgba(30,26,46,0.08);
+  }
+
+  .tool-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--purple);
+    color: white;
+    padding: 6px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 60px);
+    font-weight: 900;
+    color: var(--dark);
+    line-height: 1.05;
+    letter-spacing: -1px;
+  }
+
+  header h1 em {
+    font-style: italic;
+    color: var(--orange);
+  }
+
+  header p {
+    color: var(--mid);
+    font-size: 15px;
+    margin-top: 14px;
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* FORM */
+  .form-container {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 56px;
+  }
+
+  .form-step {
+    margin-bottom: 36px;
+    animation: stepIn 0.3s ease forwards;
+  }
+
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    background: var(--dark);
+    color: var(--warm-white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-q {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+
+  .step-hint {
+    font-size: 13px;
+    color: var(--mid);
+    margin-left: 40px;
+    margin-top: -8px;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  /* OPTION CARDS */
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .option-card {
+    padding: 14px 16px;
+    border: 2px solid rgba(30,26,46,0.12);
+    background: white;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    user-select: none;
+  }
+
+  .option-card:hover {
+    border-color: var(--orange);
+    transform: translateY(-2px);
+  }
+
+  .option-card.selected {
+    border-color: var(--purple);
+    background: rgba(91,63,140,0.06);
+  }
+
+  .option-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 12px;
+    color: var(--purple);
+    font-weight: 700;
+  }
+
+  .option-card .opt-icon { font-size: 22px; margin-bottom: 6px; }
+  .option-card .opt-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.3;
+  }
+
+  .option-card .opt-sub {
+    font-size: 11px;
+    color: var(--mid);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* RANGE INPUTS */
+  .range-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .range-item label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    color: var(--mid);
+  }
+
+  select.styled {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid rgba(30,26,46,0.12);
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--dark);
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  select.styled:focus { border-color: var(--purple); }
+
+  /* TEXTAREA */
+  textarea.styled {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid rgba(30,26,46,0.12);
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--dark);
+    resize: vertical;
+    min-height: 90px;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+
+  textarea.styled:focus { border-color: var(--purple); }
+  textarea.styled::placeholder { color: rgba(74,64,96,0.4); }
+
+  /* SUBMIT */
+  .submit-row {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 2px solid rgba(30,26,46,0.08);
+    margin-top: 8px;
+  }
+
+  .submit-btn {
+    padding: 16px 40px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+  }
+
+  .submit-btn:hover { background: var(--dark); transform: translateY(-2px); }
+
+  /* RESULTS */
+  .result-panel {
+    display: none;
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 56px 56px;
+  }
+
+  .result-panel.active { display: block; }
+
+  /* VERDICT BANNER */
+  .verdict-banner {
+    padding: 32px 36px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .verdict-banner.green { background: rgba(58,140,91,0.08); border: 2px solid var(--green); }
+  .verdict-banner.amber { background: rgba(212,135,10,0.08); border: 2px solid var(--amber); }
+  .verdict-banner.red { background: rgba(232,98,42,0.08); border: 2px solid var(--orange); }
+
+  .verdict-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .verdict-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    font-weight: 700;
+  }
+
+  .verdict-banner.green .verdict-tag { background: var(--green); color: white; }
+  .verdict-banner.amber .verdict-tag { background: var(--amber); color: white; }
+  .verdict-banner.red .verdict-tag { background: var(--orange); color: white; }
+
+  .verdict-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .verdict-banner.green .verdict-score { color: var(--green); }
+  .verdict-banner.amber .verdict-score { color: var(--amber); }
+  .verdict-banner.red .verdict-score { color: var(--orange); }
+
+  .verdict-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+
+  .verdict-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--mid);
+  }
+
+  /* CRITERIA BREAKDOWN */
+  .criteria-list { margin-bottom: 28px; }
+
+  .criteria-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .criteria-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(30,26,46,0.1);
+  }
+
+  .criterion-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(30,26,46,0.07);
+    animation: fadeIn 0.4s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  .criterion-light {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .light-green { background: var(--green); }
+  .light-amber { background: var(--amber); }
+  .light-red { background: var(--orange); }
+
+  .criterion-text h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .criterion-text p {
+    font-size: 13px;
+    color: var(--mid);
+    line-height: 1.5;
+  }
+
+  .reset-btn {
+    padding: 12px 28px;
+    background: transparent;
+    border: 2px solid var(--dark);
+    color: var(--dark);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+
+  .reset-btn:hover { background: var(--dark); color: white; }
+
+  @media (max-width: 768px) {
+    header { padding: 32px 24px; }
+    .form-container { padding: 32px 24px; }
+    .result-panel { padding: 0 24px 48px; }
+    .options-grid { grid-template-columns: 1fr 1fr; }
+    .range-group { grid-template-columns: 1fr; }
+    .verdict-top { flex-direction: column; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-shapes">
+  <div class="shape-1"></div>
+  <div class="shape-2"></div>
+  <div class="shape-3"></div>
+</div>
+
+<header>
+  <div class="tool-badge">Animation Finance Tool — 04</div>
+  <h1>Pitch <em>Fit</em><br>Checker</h1>
+  <p>Stress-test your concept against current UK children's broadcaster priorities. Get a blunt, fast, honest assessment before you invest in a full pitch document.</p>
+</header>
+
+<div class="form-container" id="formContainer">
+  <div class="form-step">
+    <div class="step-label">
+      <div class="step-num">1</div>
+      <div class="step-q">What's the age target?</div>
+    </div>
+    <div class="options-grid">
+      <div class="option-card selected" onclick="selectOption(this, 'age', '0-2')">
+        <div class="opt-icon">🧸</div>
+        <div class="opt-label">0–2 years</div>
+        <div class="opt-sub">Toddler / pre-verbal</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'age', '2-4')">
+        <div class="opt-icon">🎨</div>
+        <div class="opt-label">2–4 years</div>
+        <div class="opt-sub">Early preschool</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'age', '3-6')">
+        <div class="opt-icon">🚀</div>
+        <div class="opt-label">3–6 years</div>
+        <div class="opt-sub">Core preschool</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'age', '4-7')">
+        <div class="opt-icon">⭐</div>
+        <div class="opt-label">4–7 years</div>
+        <div class="opt-sub">Upper preschool / bridge</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-step">
+    <div class="step-label">
+      <div class="step-num">2</div>
+      <div class="step-q">Format</div>
+    </div>
+    <div class="range-group">
+      <div class="range-item">
+        <label>Episodes × Duration</label>
+        <select class="styled" id="formatSel">
+          <option value="52x7">52 × 7 minutes</option>
+          <option value="52x11" selected>52 × 11 minutes</option>
+          <option value="26x22">26 × 22 minutes</option>
+          <option value="26x11">26 × 11 minutes</option>
+          <option value="10x22">10 × 22 minutes</option>
+          <option value="shorts">Short form / digital first</option>
+        </select>
+      </div>
+      <div class="range-item">
+        <label>Budget per episode</label>
+        <select class="styled" id="budgetSel">
+          <option value="low">Under £100k</option>
+          <option value="mid" selected>£100k–£300k</option>
+          <option value="high">£300k–£600k</option>
+          <option value="premium">Over £600k</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-step">
+    <div class="step-label">
+      <div class="step-num">3</div>
+      <div class="step-q">Primary genre / tone</div>
+    </div>
+    <div class="options-grid">
+      <div class="option-card selected" onclick="selectOption(this, 'genre', 'comedy')">
+        <div class="opt-icon">😂</div>
+        <div class="opt-label">Comedy</div>
+        <div class="opt-sub">Slapstick, situational, absurd</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'genre', 'educational')">
+        <div class="opt-icon">🔢</div>
+        <div class="opt-label">Educational</div>
+        <div class="opt-sub">Curriculum, STEM, literacy</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'genre', 'adventure')">
+        <div class="opt-icon">🗺</div>
+        <div class="opt-label">Adventure</div>
+        <div class="opt-sub">Quest, exploration, discovery</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'genre', 'calm')">
+        <div class="opt-icon">🌙</div>
+        <div class="opt-label">Calm / Bedtime</div>
+        <div class="opt-sub">Routine, sensory, soothing</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'genre', 'music')">
+        <div class="opt-icon">🎵</div>
+        <div class="opt-label">Music-led</div>
+        <div class="opt-sub">Song, movement, rhythm</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'genre', 'nature')">
+        <div class="opt-icon">🌿</div>
+        <div class="opt-label">Nature / World</div>
+        <div class="opt-sub">Outdoor, science, environment</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-step">
+    <div class="step-label">
+      <div class="step-num">4</div>
+      <div class="step-q">Representation & diversity</div>
+    </div>
+    <div class="options-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">
+      <div class="option-card" onclick="toggleMulti(this, 'diversity', 'ethnic')">
+        <div class="opt-label">Ethnic diversity</div>
+        <div class="opt-sub">Lead characters and world</div>
+      </div>
+      <div class="option-card" onclick="toggleMulti(this, 'diversity', 'sen')">
+        <div class="opt-label">SEN / disability</div>
+        <div class="opt-sub">Accessibility-first design</div>
+      </div>
+      <div class="option-card" onclick="toggleMulti(this, 'diversity', 'british')">
+        <div class="opt-label">British cultural identity</div>
+        <div class="opt-sub">Specific, rooted, authentic</div>
+      </div>
+      <div class="option-card" onclick="toggleMulti(this, 'diversity', 'gender')">
+        <div class="opt-label">Gender balance</div>
+        <div class="opt-sub">Female lead or equal ensemble</div>
+      </div>
+      <div class="option-card" onclick="toggleMulti(this, 'diversity', 'none')">
+        <div class="opt-label">None of the above</div>
+        <div class="opt-sub">Generic / universal world</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-step">
+    <div class="step-label">
+      <div class="step-num">5</div>
+      <div class="step-q">Co-production status</div>
+    </div>
+    <div class="options-grid">
+      <div class="option-card selected" onclick="selectOption(this, 'copro', 'none')">
+        <div class="opt-label">None yet</div>
+        <div class="opt-sub">Concept stage only</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'copro', 'inprogress')">
+        <div class="opt-label">In conversation</div>
+        <div class="opt-sub">Early co-pro discussions</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'copro', 'attached')">
+        <div class="opt-label">Co-producer attached</div>
+        <div class="opt-sub">Deal or LOI in place</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'copro', 'funded')">
+        <div class="opt-label">Partially financed</div>
+        <div class="opt-sub">Fund or broadcaster confirmed</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-step">
+    <div class="step-label">
+      <div class="step-num">6</div>
+      <div class="step-q">One-line concept (optional but useful)</div>
+    </div>
+    <p class="step-hint">A brief description helps calibrate the assessment. Don't overthink it.</p>
+    <textarea class="styled" id="logline" placeholder="e.g. A 5-year-old girl who solves neighbourhood mysteries with her talking dog..."></textarea>
+  </div>
+
+  <div class="submit-row">
+    <button class="submit-btn" onclick="runAssessment()">Get My Assessment →</button>
+  </div>
+</div>
+
+<div class="result-panel" id="resultPanel"></div>
+
+<script>
+  const selections = { age: '0-2', genre: 'comedy', copro: 'none', diversity: [] };
+
+  function selectOption(el, key, val) {
+    const parent = el.closest('.options-grid') || el.parentElement;
+    parent.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selections[key] = val;
+  }
+
+  function toggleMulti(el, key, val) {
+    el.classList.toggle('selected');
+    if (!selections[key]) selections[key] = [];
+    if (el.classList.contains('selected')) {
+      selections[key].push(val);
+    } else {
+      selections[key] = selections[key].filter(v => v !== val);
+    }
+  }
+
+  function runAssessment() {
+    const logline = document.getElementById('logline').value;
+    const format = document.getElementById('formatSel').value;
+    const budget = document.getElementById('budgetSel').value;
+    const diversity = selections.diversity || [];
+    const genre = selections.genre;
+    const age = selections.age;
+    const copro = selections.copro;
+
+    let score = 50;
+    const criteria = [];
+
+    // Age assessment
+    if (age === '3-6') {
+      score += 12;
+      criteria.push({ status: 'green', title: 'Age target — core', body: '3–6 is the sweet spot for CBeebies commissioning. Strong alignment with broadcast schedule and iPlayer strategy.' });
+    } else if (age === '2-4') {
+      score += 8;
+      criteria.push({ status: 'green', title: 'Age target — good', body: '2–4 is well served and prioritised. Consider whether content truly works for the younger end — developmental appropriateness will be scrutinised.' });
+    } else if (age === '0-2') {
+      score += 15;
+      criteria.push({ status: 'green', title: 'Age target — underserved white space', body: '0–2 is a genuine gap in the current slate. Less competition, strong parental demand, and clear PSB value. This is a bold and potentially strong positioning.' });
+    } else {
+      score += 4;
+      criteria.push({ status: 'amber', title: 'Age target — upper edge', body: '4–7 sits at the boundary of the 0–6 remit. This can work but expect scrutiny about whether it really belongs in the CBeebies schedule or should be targeting CBBC.' });
+    }
+
+    // Genre
+    if (genre === 'educational') {
+      score += 14;
+      criteria.push({ status: 'green', title: 'Genre — strong PSB alignment', body: 'Educational content with clear curriculum outcomes is a priority. Numberblocks/Alphablocks set a high bar. Be specific about what children will learn and how it's assessed.' });
+    } else if (genre === 'comedy') {
+      score += 10;
+      criteria.push({ status: 'green', title: 'Genre — genuine gap', body: 'Preschool comedy is currently underserved. Authentic, warm British humour that works for co-viewing adults is a strong brief. Be careful not to skew too old.' });
+    } else if (genre === 'calm') {
+      score += 12;
+      criteria.push({ status: 'green', title: 'Genre — high demand', body: 'Routine and bedtime content has proven audience need. BeddyByes success demonstrates the appetite. Needs very strong sensory design and distinctive world.' });
+    } else if (genre === 'nature') {
+      score += 8;
+      criteria.push({ status: 'amber', title: 'Genre — moderately served', body: 'Nature content is present on the slate but not oversaturated. Strong if curriculum-backed with genuine scientific rigour. Purely whimsical nature adventure is harder to differentiate.' });
+    } else if (genre === 'adventure') {
+      score += 4;
+      criteria.push({ status: 'amber', title: 'Genre — competitive', body: 'Adventure is the most crowded space in 0–6 commissioning globally. Distinctive world-building and a genuinely original character hook are essential to stand out.' });
+    } else {
+      score += 10;
+      criteria.push({ status: 'green', title: 'Genre — music-led content', body: 'Music-integrated content consistently performs well for CBeebies. Co-viewing and physical participation elements strengthen the brief significantly.' });
+    }
+
+    // Diversity
+    if (diversity.includes('sen')) {
+      score += 12;
+      criteria.push({ status: 'green', title: 'SEN / accessibility-first design', body: 'This is a significant white space and a clear BBC public value priority. A show designed from the ground up for neurodivergent and SEN children — not adapted, but conceived that way — has strong commissioning credentials.' });
+    }
+    if (diversity.includes('british')) {
+      score += 10;
+      criteria.push({ status: 'green', title: 'British cultural identity', body: 'Distinctively British content aligns with BBC Ignite priorities and PSB obligations. Be specific about what makes this British — generic UK setting is not enough.' });
+    }
+    if (diversity.includes('ethnic')) {
+      score += 6;
+      criteria.push({ status: 'green', title: 'Ethnic diversity in leads', body: 'Expected and valued. Must be authentic and specific rather than tokenistic — commissioners are increasingly rigorous on this.' });
+    }
+    if (diversity.includes('none') || diversity.length === 0) {
+      score -= 8;
+      criteria.push({ status: 'red', title: 'Representation — gap', body: 'The current commissioning climate strongly expects diverse representation, particularly in lead characters. A generic/universal world without clear diversity thinking is a significant disadvantage.' });
+    }
+
+    // Format
+    if (format === '52x11') {
+      score += 8;
+      criteria.push({ status: 'green', title: 'Format — standard slate fit', body: '52 × 11\' is the core CBeebies format. Good iPlayer and repeat scheduling fit. Algorithm-friendly for YouTube if that\'s part of the strategy.' });
+    } else if (format === 'shorts' || format === '52x7') {
+      score += 10;
+      criteria.push({ status: 'green', title: 'Format — digital-first friendly', body: 'Short form content aligns with CBeebies digital strategy and YouTube co-deployment. Lower episode budget makes co-pro stack easier to assemble.' });
+    } else if (format === '26x22' || format === '10x22') {
+      score += 2;
+      criteria.push({ status: 'amber', title: 'Format — harder to place', body: 'Longer form is harder to schedule on CBeebies and more expensive to finance. Premium short run (10 × 22\') works better for Netflix / Apple than linear broadcasters.' });
+    } else {
+      score += 5;
+      criteria.push({ status: 'green', title: 'Format — flexible', body: '26 × 11\' works well for iPlayer commissioning and is more achievable for first-time producers.' });
+    }
+
+    // Budget
+    if (budget === 'high' || budget === 'premium') {
+      score -= 4;
+      criteria.push({ status: 'amber', title: 'Budget — financing challenge', body: 'Higher budgets require stronger co-production stacks. At this level, CBeebies fee covers less than 10% of the budget. Ensure your financing plan is credible before the pitch conversation.' });
+    } else if (budget === 'mid') {
+      score += 5;
+      criteria.push({ status: 'green', title: 'Budget — achievable range', body: '£100k–£300k per episode is the most common range for successful CBeebies co-productions. Gives you flexibility to assemble a viable stack without overexposure.' });
+    } else {
+      score += 8;
+      criteria.push({ status: 'green', title: 'Budget — lean and fundable', body: 'Under £100k per episode is achievable without complex co-pro structures. Consider whether this budget delivers the visual quality your concept needs.' });
+    }
+
+    // Co-pro status
+    if (copro === 'funded') {
+      score += 14;
+      criteria.push({ status: 'green', title: 'Co-production — strong position', body: 'Partially financed projects are significantly more attractive. You\'re de-risking the conversation for the broadcaster from the outset.' });
+    } else if (copro === 'attached') {
+      score += 10;
+      criteria.push({ status: 'green', title: 'Co-production — co-producer attached', body: 'A co-producer attached demonstrates financial credibility and production capability. Strong position to enter a commissioning conversation.' });
+    } else if (copro === 'inprogress') {
+      score += 4;
+      criteria.push({ status: 'amber', title: 'Co-production — early stage', body: 'In conversation is better than nothing but be honest about how advanced those conversations are. Vague co-pro talk without specifics is a red flag for experienced commissioners.' });
+    } else {
+      score -= 6;
+      criteria.push({ status: 'red', title: 'Co-production — no plan', body: 'Arriving without any co-production thinking is a significant weakness in the current market. At minimum, demonstrate you understand the financing challenge and have a credible plan to address it.' });
+    }
+
+    // Cap score
+    score = Math.min(Math.max(score, 10), 95);
+
+    const verdict = score >= 72
+      ? { label: 'Strong Fit', tone: 'green', title: 'This concept has real potential', body: `Your pitch shows genuine alignment with current UK broadcaster priorities. The concept addresses real gaps and demonstrates the commissioning fundamentals. The priority now is making sure your pitch document is as strong as the concept — sharp logline, clear educational or developmental value, credible financing plan, and distinctive visual identity. Get this in front of the right person.` }
+      : score >= 52
+      ? { label: 'Develop Further', tone: 'amber', title: 'Promising but not ready to pitch', body: `There are real strengths here but also significant gaps that will be exposed in a commissioning conversation. The issues flagged below should be resolved before you invest in a full pitch document. The concept has potential — the work is in making it pitch-ready.` }
+      : { label: 'Significant Rework', tone: 'red', title: 'This concept needs rethinking', body: `In its current form this concept faces serious challenges in the commissioning market. The issues flagged are not cosmetic — they go to the fundamentals of how the concept is positioned and financed. Take the feedback seriously and revisit the core premise before pitching.` };
+
+    const criteriaHtml = criteria.map((c, i) => `
+      <div class="criterion-row" style="animation-delay:${i * 0.07}s">
+        <div class="criterion-light light-${c.status}"></div>
+        <div class="criterion-text">
+          <h4>${c.title}</h4>
+          <p>${c.body}</p>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('formContainer').style.display = 'none';
+    const rp = document.getElementById('resultPanel');
+    rp.classList.add('active');
+    rp.innerHTML = `
+      <div class="verdict-banner ${verdict.tone}">
+        <div class="verdict-top">
+          <span class="verdict-tag">${verdict.label}</span>
+          <div class="verdict-score">${score}</div>
+        </div>
+        <div class="verdict-title">${verdict.title}</div>
+        <div class="verdict-body">${verdict.body}</div>
+      </div>
+
+      <div class="criteria-list">
+        <div class="criteria-title">Criteria Breakdown</div>
+        ${criteriaHtml}
+      </div>
+
+      <button class="reset-btn" onclick="resetForm()">← Assess another concept</button>
+    `;
+  }
+
+  function resetForm() {
+    document.getElementById('formContainer').style.display = 'block';
+    const rp = document.getElementById('resultPanel');
+    rp.classList.remove('active');
+    rp.innerHTML = '';
+  }
+</script>
+</body>
+</html>

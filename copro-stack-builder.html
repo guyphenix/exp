@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Co-Pro Stack Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=DM+Mono:wght@400;500&family=Archivo+Black&family=Archivo:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E63329;
+    --blue: #1B3FCC;
+    --yellow: #F5C800;
+    --black: #0D0D0D;
+    --white: #F5F0E8;
+    --grey: #D4CFC6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--white);
+    font-family: 'Archivo', sans-serif;
+    color: var(--black);
+    min-height: 100vh;
+  }
+
+  /* BAUHAUS HEADER */
+  header {
+    background: var(--black);
+    padding: 0;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: stretch;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .header-stripe {
+    width: 18px;
+    background: var(--red);
+  }
+
+  .header-mid {
+    padding: 28px 36px;
+  }
+
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 6px;
+  }
+
+  header h1 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(28px, 5vw, 52px);
+    color: var(--white);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+  }
+
+  .header-circle {
+    width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--yellow);
+    position: relative;
+  }
+
+  .header-circle::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--red);
+  }
+
+  /* MAIN LAYOUT */
+  main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: calc(100vh - 120px);
+  }
+
+  /* LEFT PANEL */
+  .input-panel {
+    border-right: 3px solid var(--black);
+    padding: 48px 40px;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--red);
+    opacity: 0.3;
+  }
+
+  .field-group {
+    margin-bottom: 28px;
+  }
+
+  label {
+    display: block;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    color: var(--black);
+  }
+
+  select, input[type="number"], input[type="text"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--black);
+    background: var(--white);
+    font-family: 'Archivo', sans-serif;
+    font-size: 15px;
+    color: var(--black);
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    outline: none;
+  }
+
+  select:focus, input:focus {
+    border-color: var(--blue);
+    background: #EBF0FF;
+  }
+
+  .select-wrapper {
+    position: relative;
+  }
+
+  .select-wrapper::after {
+    content: '▼';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    pointer-events: none;
+    color: var(--black);
+  }
+
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 2px solid var(--grey);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .checkbox-item:hover {
+    border-color: var(--black);
+  }
+
+  .checkbox-item.active {
+    border-color: var(--blue);
+    background: #EBF0FF;
+  }
+
+  .checkbox-item input { display: none; }
+
+  .checkbox-dot {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--black);
+    background: transparent;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .checkbox-item.active .checkbox-dot {
+    background: var(--blue);
+    border-color: var(--blue);
+  }
+
+  .checkbox-text {
+    font-family: 'Archivo', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .build-btn {
+    width: 100%;
+    padding: 20px;
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 16px;
+  }
+
+  .build-btn:hover { background: var(--black); transform: translateY(-2px); }
+  .build-btn:active { transform: translateY(0); }
+
+  /* RIGHT PANEL */
+  .output-panel {
+    padding: 48px 40px;
+    background: var(--white);
+  }
+
+  .empty-state {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 24px;
+    opacity: 0.4;
+  }
+
+  .empty-bauhaus {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 80px;
+    height: 80px;
+  }
+
+  .empty-bauhaus div:nth-child(1) { background: var(--red); }
+  .empty-bauhaus div:nth-child(2) { background: var(--blue); border-radius: 50%; }
+  .empty-bauhaus div:nth-child(3) { background: var(--yellow); border-radius: 50% 0 0 0; }
+  .empty-bauhaus div:nth-child(4) { background: var(--black); }
+
+  .empty-state p {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* RESULTS */
+  .results { display: none; }
+  .results.visible { display: block; }
+
+  .total-bar {
+    background: var(--black);
+    color: var(--white);
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .total-bar .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--yellow);
+  }
+
+  .total-bar .amount {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 28px;
+    color: var(--white);
+  }
+
+  .partner-card {
+    border: 2px solid var(--black);
+    margin-bottom: 12px;
+    overflow: hidden;
+    animation: slideIn 0.3s ease forwards;
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .partner-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    gap: 14px;
+  }
+
+  .partner-flag {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .partner-name {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 15px;
+    text-transform: uppercase;
+    flex: 1;
+  }
+
+  .partner-pct {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 22px;
+    color: var(--white);
+    background: var(--blue);
+    padding: 4px 12px;
+  }
+
+  .partner-body {
+    padding: 14px 18px;
+    border-top: 1px solid var(--grey);
+    background: #FAFAF6;
+  }
+
+  .partner-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--red);
+  }
+
+  .partner-details {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #444;
+  }
+
+  .partner-fund {
+    display: inline-block;
+    background: var(--yellow);
+    padding: 2px 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 6px;
+    margin-right: 4px;
+  }
+
+  .gap-warning {
+    background: var(--yellow);
+    border: 2px solid var(--black);
+    padding: 16px 18px;
+    margin-top: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .gap-warning .icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .gap-warning p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .gap-warning strong {
+    font-family: 'Archivo Black', sans-serif;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .stack-bar {
+    margin-top: 24px;
+    border: 2px solid var(--black);
+    overflow: hidden;
+  }
+
+  .stack-bar-label {
+    background: var(--black);
+    color: var(--white);
+    padding: 8px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .stack-bar-fill {
+    display: flex;
+    height: 36px;
+  }
+
+  .stack-segment {
+    height: 100%;
+    transition: flex 0.5s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .stack-segment span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--black);
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 0 4px;
+  }
+
+  @media (max-width: 768px) {
+    main { grid-template-columns: 1fr; }
+    .input-panel { border-right: none; border-bottom: 3px solid var(--black); }
+    .checkbox-group { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-stripe"></div>
+  <div class="header-mid">
+    <div class="header-label">Animation Finance Tool — 01</div>
+    <h1>Co-Pro Stack<br>Builder</h1>
+  </div>
+  <div class="header-circle"></div>
+</header>
+
+<main>
+  <div class="input-panel">
+    <div class="section-label">Your Project</div>
+
+    <div class="field-group">
+      <label>Home Territory</label>
+      <div class="select-wrapper">
+        <select id="homeTerritory">
+          <option value="uk">United Kingdom</option>
+          <option value="ireland">Ireland</option>
+          <option value="france">France</option>
+          <option value="germany">Germany</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Format</label>
+      <div class="select-wrapper">
+        <select id="format">
+          <option value="52x7">52 × 7' (Short series)</option>
+          <option value="52x11">52 × 11' (Standard series)</option>
+          <option value="26x22">26 × 22' (Long form)</option>
+          <option value="26x7">26 × 7' (Mini series)</option>
+          <option value="10x22">10 × 22' (Premium short run)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Budget Per Episode (£)</label>
+      <input type="number" id="budget" value="300000" min="50000" step="10000">
+    </div>
+
+    <div class="field-group">
+      <label>Home Broadcaster Attached?</label>
+      <div class="select-wrapper">
+        <select id="broadcaster">
+          <option value="cbeebies">CBeebies (BBC)</option>
+          <option value="milkshake">Milkshake! (Channel 5)</option>
+          <option value="none">None yet</option>
+          <option value="netflix">Netflix</option>
+          <option value="apple">Apple TV+</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Target Co-Production Territories</label>
+      <div class="checkbox-group" id="territories">
+        <label class="checkbox-item active" onclick="toggleTerritory(this, 'canada')">
+          <input type="checkbox" checked>
+          <div class="checkbox-dot"></div>
+          <span class="checkbox-text">🇨🇦 Canada</span>
+        </label>
+        <label class="checkbox-item active" onclick="toggleTerritory(this, 'france')">
+          <input type="checkbox" checked>
+          <div class="checkbox-dot"></div>
+          <span class="checkbox-text">🇫🇷 France</span>
+        </label>
+        <label class="checkbox-item" onclick="toggleTerritory(this, 'australia')">
+          <input type="checkbox">
+          <div class="checkbox-dot"></div>
+          <span class="checkbox-text">🇦🇺 Australia</span>
+        </label>
+        <label class="checkbox-item" onclick="toggleTerritory(this, 'ireland')">
+          <input type="checkbox">
+          <div class="checkbox-dot"></div>
+          <span class="checkbox-text">🇮🇪 Ireland</span>
+        </label>
+        <label class="checkbox-item" onclick="toggleTerritory(this, 'germany')">
+          <input type="checkbox">
+          <div class="checkbox-dot"></div>
+          <span class="checkbox-text">🇩🇪 Germany</span>
+        </label>
+        <label class="checkbox-item" onclick="toggleTerritory(this, 'nordics')">
+          <input type="checkbox">
+          <div class="checkbox-dot"></div>
+          <span class="checkbox-text">🇸🇪 Nordics</span>
+        </label>
+      </div>
+    </div>
+
+    <button class="build-btn" onclick="buildStack()">Build My Stack →</button>
+  </div>
+
+  <div class="output-panel">
+    <div class="section-label">Your Stack</div>
+
+    <div class="empty-state" id="emptyState">
+      <div class="empty-bauhaus">
+        <div></div><div></div><div></div><div></div>
+      </div>
+      <p>Fill in your project details<br>and build your financing stack</p>
+    </div>
+
+    <div class="results" id="results"></div>
+  </div>
+</main>
+
+<script>
+  const territoryData = {
+    canada: {
+      flag: '🇨🇦',
+      name: 'Canada',
+      fund: 'CMF + CBC Kids',
+      pct: 25,
+      funds: ['Canada Media Fund', 'Telefilm Canada'],
+      note: 'Requires Canadian co-producer attached. CBC Kids interest significantly strengthens CMF application. Treaty co-production status essential.',
+      color: '#E63329'
+    },
+    france: {
+      flag: '🇫🇷',
+      name: 'France',
+      fund: 'CNC + France Télévisions',
+      pct: 20,
+      funds: ['CNC', 'France Télévisions'],
+      note: 'French co-producer required (Folivari, Dandelooo, TeamTO). CNC COSIP funding tied to broadcaster presale. Strong quota system works in your favour.',
+      color: '#1B3FCC'
+    },
+    australia: {
+      flag: '🇦🇺',
+      name: 'Australia',
+      fund: 'Screen Australia + ABC Kids',
+      pct: 18,
+      funds: ['Screen Australia', 'ABC Kids'],
+      note: 'Nature/outdoor content particularly strong. ABC Kids relationship is key. Production Activity funding requires Australian creative lead involvement.',
+      color: '#F5C800'
+    },
+    ireland: {
+      flag: '🇮🇪',
+      name: 'Ireland',
+      fund: 'Screen Ireland + TG4',
+      pct: 12,
+      funds: ['Screen Ireland', 'BAI Sound & Vision'],
+      note: 'Easiest first co-production partner for UK studios. Section 481 tax incentive adds further value. Irish language broadcaster TG4 adds modest additional funding.',
+      color: '#2D9E4F'
+    },
+    germany: {
+      flag: '🇩🇪',
+      name: 'Germany',
+      fund: 'KiKA + Regional Funds',
+      pct: 15,
+      funds: ['KiKA', 'MDR', 'German Regional Funds'],
+      note: 'German co-producer required. KiKA (ZDF/ARD joint channel) is primary broadcaster. Dialogue-light content travels well into German market without dubbing complexity.',
+      color: '#6B4CE6'
+    },
+    nordics: {
+      flag: '🇸🇪',
+      name: 'Nordics',
+      fund: 'NRK + SVT + YLE',
+      pct: 10,
+      funds: ['Nordic Film & TV Fund', 'SVT', 'NRK'],
+      note: 'Multiple broadcaster relationships possible across Sweden, Norway, Finland. Nordic Film & TV Fund co-production support. Strong appetite for quality preschool content.',
+      color: '#0891B2'
+    }
+  };
+
+  const broadcasterFees = {
+    cbeebies: { pct: 12, label: 'CBeebies / BBC', note: 'Typical BBC contribution — deficit financing required' },
+    milkshake: { pct: 8, label: 'Milkshake! / Ch5', note: 'Lower fee — strong co-pro stack essential' },
+    none: { pct: 0, label: 'No broadcaster yet', note: 'Speculative development — presales strategy needed' },
+    netflix: { pct: 45, label: 'Netflix', note: 'Higher fee but typically requires IP rights concessions' },
+    apple: { pct: 55, label: 'Apple TV+', note: 'Premium fee with premium quality expectations' }
+  };
+
+  let selectedTerritories = ['canada', 'france'];
+
+  function toggleTerritory(el, territory) {
+    el.classList.toggle('active');
+    if (selectedTerritories.includes(territory)) {
+      selectedTerritories = selectedTerritories.filter(t => t !== territory);
+    } else {
+      selectedTerritories.push(territory);
+    }
+  }
+
+  function formatMoney(n) {
+    if (n >= 1000000) return '£' + (n/1000000).toFixed(1) + 'm';
+    if (n >= 1000) return '£' + Math.round(n/1000) + 'k';
+    return '£' + n;
+  }
+
+  function buildStack() {
+    const budget = parseInt(document.getElementById('budget').value);
+    const broadcaster = document.getElementById('broadcaster').value;
+    const format = document.getElementById('format').value;
+    const episodes = parseInt(format.split('x')[0]);
+    const totalBudget = budget * episodes;
+
+    const bc = broadcasterFees[broadcaster];
+    let covered = bc.pct;
+    const partners = [];
+
+    // UK Tax Credit
+    const taxCredit = { flag: '🇬🇧', name: 'UK Animation Tax Relief', pct: 20, funds: ['HMRC ATR'], color: '#555', note: '25% of qualifying UK expenditure. Non-negotiable — factor into every budget. Requires BFI Cultural Test pass.' };
+
+    for (const t of selectedTerritories) {
+      if (covered + territoryData[t].pct <= 95) {
+        partners.push(territoryData[t]);
+        covered += territoryData[t].pct;
+      }
+    }
+
+    covered += taxCredit.pct;
+    const gap = Math.max(0, 100 - covered);
+
+    document.getElementById('emptyState').style.display = 'none';
+    const results = document.getElementById('results');
+    results.classList.add('visible');
+
+    const segments = [];
+    if (bc.pct > 0) segments.push({ label: bc.label.split('/')[0].trim(), pct: bc.pct, color: '#0D0D0D' });
+    for (const p of partners) segments.push({ label: p.flag, pct: p.pct, color: p.color });
+    segments.push({ label: 'ATR', pct: taxCredit.pct, color: '#888' });
+    if (gap > 0) segments.push({ label: 'GAP', pct: gap, color: '#F5C800' });
+
+    const segHtml = segments.map(s =>
+      `<div class="stack-segment" style="flex:${s.pct};background:${s.color}">
+        <span style="color:${s.color === '#F5C800' ? '#000' : '#fff'}">${s.label} ${s.pct}%</span>
+      </div>`
+    ).join('');
+
+    let html = `
+      <div class="total-bar">
+        <div>
+          <div class="label">Total Production Budget</div>
+          <div style="font-family:'DM Mono',monospace;font-size:12px;color:#aaa;margin-top:4px">${episodes} episodes × ${formatMoney(budget)}</div>
+        </div>
+        <div class="amount">${formatMoney(totalBudget)}</div>
+      </div>
+
+      <div class="stack-bar">
+        <div class="stack-bar-label">Financing Stack Visualisation</div>
+        <div class="stack-bar-fill">${segHtml}</div>
+      </div>
+
+      <div style="margin:24px 0 12px;font-family:'Archivo Black',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:1px">Partners</div>
+    `;
+
+    // Broadcaster card
+    html += `
+      <div class="partner-card" style="animation-delay:0.05s">
+        <div class="partner-header" style="background:#F5F0E8">
+          <div class="partner-flag">📺</div>
+          <div class="partner-name">${bc.label}</div>
+          <div class="partner-pct" style="background:#0D0D0D">${bc.pct}%</div>
+        </div>
+        <div class="partner-body">
+          <div class="partner-amount">${formatMoney(totalBudget * bc.pct / 100)}</div>
+          <div class="partner-details">${bc.note}</div>
+        </div>
+      </div>
+    `;
+
+    partners.forEach((p, i) => {
+      html += `
+        <div class="partner-card" style="animation-delay:${(i+1) * 0.08}s">
+          <div class="partner-header" style="background:#F5F0E8">
+            <div class="partner-flag">${p.flag}</div>
+            <div class="partner-name">${p.name} — ${p.fund}</div>
+            <div class="partner-pct" style="background:${p.color}">${p.pct}%</div>
+          </div>
+          <div class="partner-body">
+            <div class="partner-amount">${formatMoney(totalBudget * p.pct / 100)}</div>
+            <div class="partner-details">${p.note}</div>
+            <div>${p.funds.map(f => `<span class="partner-fund">${f}</span>`).join('')}</div>
+          </div>
+        </div>
+      `;
+    });
+
+    // Tax credit
+    html += `
+      <div class="partner-card" style="animation-delay:${(partners.length+1) * 0.08}s">
+        <div class="partner-header" style="background:#F5F0E8">
+          <div class="partner-flag">🏦</div>
+          <div class="partner-name">UK Animation Tax Relief</div>
+          <div class="partner-pct" style="background:#555">20%</div>
+        </div>
+        <div class="partner-body">
+          <div class="partner-amount">${formatMoney(totalBudget * 0.20)}</div>
+          <div class="partner-details">${taxCredit.note}</div>
+          <span class="partner-fund">HMRC ATR</span>
+        </div>
+      </div>
+    `;
+
+    if (gap > 5) {
+      html += `
+        <div class="gap-warning">
+          <div class="icon">⚠</div>
+          <p>
+            <strong>Financing Gap: ${gap}% — ${formatMoney(totalBudget * gap / 100)}</strong>
+            Consider adding more co-production territories, pursuing distribution advances from a sales agent (Cake, Distribution360, GKIDS), or modelling gap finance through a UK bank. Alternatively, reduce per-episode budget or episode count.
+          </p>
+        </div>
+      `;
+    } else {
+      html += `
+        <div style="background:#E8F5E9;border:2px solid #2D9E4F;padding:16px 18px;margin-top:12px;display:flex;gap:12px;align-items:center">
+          <span style="font-size:20px">✓</span>
+          <p style="font-size:13px;line-height:1.5"><strong style="font-family:'Archivo Black',sans-serif;display:block;margin-bottom:4px">Stack looks viable</strong>
+          Your financing is ${100 - gap}% covered. Remaining gap of ${gap}% is within normal distribution advance territory.</p>
+        </div>
+      `;
+    }
+
+    results.innerHTML = html;
+  }
+</script>
+</body>
+</html>

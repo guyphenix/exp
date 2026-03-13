@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Kids Health Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Syne+Mono&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00E676;
+    --amber: #FFB300;
+    --red: #FF3D3D;
+    --black: #0A0A0A;
+    --dark: #111111;
+    --surface: #1A1A1A;
+    --border: #2A2A2A;
+    --text: #F0F0F0;
+    --muted: #666;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 48px 56px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green) 0%, transparent 60%);
+  }
+
+  .tool-num {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 56px);
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  header h1 span { color: var(--green); }
+
+  header p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 12px;
+    max-width: 520px;
+    line-height: 1.7;
+  }
+
+  /* INPUT SECTION */
+  .input-section {
+    padding: 48px 56px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .input-row {
+    display: flex;
+    gap: 12px;
+    max-width: 700px;
+  }
+
+  .url-input {
+    flex: 1;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Syne Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .url-input:focus { border-color: var(--green); }
+  .url-input::placeholder { color: var(--muted); }
+
+  .check-btn {
+    padding: 16px 32px;
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .check-btn:hover { background: #69F0AE; }
+
+  .demo-links {
+    margin-top: 16px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .demo-link {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+  }
+
+  .demo-link:hover { color: var(--green); }
+
+  /* LOADING */
+  .loading {
+    display: none;
+    padding: 80px 56px;
+    text-align: center;
+  }
+
+  .loading.active { display: block; }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading p {
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* RESULTS */
+  .results {
+    display: none;
+    padding: 48px 56px;
+  }
+
+  .results.active { display: block; }
+
+  /* SCORE HEADER */
+  .score-hero {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    margin-bottom: 40px;
+    padding: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .score-dial {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
+  }
+
+  .score-dial svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .score-dial .track {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 8;
+  }
+
+  .score-dial .fill {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    stroke-dasharray: 340;
+    stroke-dashoffset: 340;
+  }
+
+  .score-number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .score-number .num {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .score-number .out-of {
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .score-info h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .score-verdict {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 500px;
+  }
+
+  /* METRIC CARDS */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .metric-card {
+    background: var(--dark);
+    padding: 24px;
+    position: relative;
+  }
+
+  .metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .metric-name {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .metric-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .status-good { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .status-warn { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .status-bad { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+  .metric-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .metric-subtext {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .metric-bar {
+    margin-top: 14px;
+    height: 3px;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .metric-bar-fill {
+    height: 100%;
+    transition: width 1s ease;
+    width: 0;
+  }
+
+  /* RECOMMENDATIONS */
+  .rec-section {
+    margin-top: 32px;
+  }
+
+  .rec-title {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .rec-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .rec-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.4s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  .rec-priority {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    height: fit-content;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .priority-high { background: rgba(255,61,61,0.15); color: var(--red); border: 1px solid rgba(255,61,61,0.3); }
+  .priority-med { background: rgba(255,179,0,0.15); color: var(--amber); border: 1px solid rgba(255,179,0,0.3); }
+  .priority-low { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+
+  .rec-content h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .rec-content p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    header { padding: 32px 24px; }
+    .input-section { padding: 32px 24px; }
+    .results { padding: 32px 24px; }
+    .input-row { flex-direction: column; }
+    .score-hero { flex-direction: column; gap: 24px; }
+    .metrics-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-accent"></div>
+  <div class="tool-num">Animation Finance Tool — 03</div>
+  <h1>YouTube Kids<br><span>Health</span> Checker</h1>
+  <p>Diagnostic analysis for Made for Kids channels. RPM benchmarks, COPPA flags, algorithmic performance and audience cadence — calibrated for 0–6 animation.</p>
+</header>
+
+<div class="input-section">
+  <div class="input-row">
+    <input type="text" class="url-input" id="urlInput" placeholder="youtube.com/@yourchannel or channel URL">
+    <button class="check-btn" onclick="runCheck()">Run Diagnostic →</button>
+  </div>
+  <div class="demo-links">
+    <span style="font-family:'Syne Mono',monospace;font-size:11px;color:var(--muted)">Try a demo:</span>
+    <button class="demo-link" onclick="runDemo('strong')">Strong performing channel</button>
+    <button class="demo-link" onclick="runDemo('average')">Average performing channel</button>
+    <button class="demo-link" onclick="runDemo('weak')">Struggling channel</button>
+  </div>
+</div>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>Analysing channel data...</p>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+const demos = {
+  strong: {
+    name: "Bobbins & Bears",
+    url: "youtube.com/@bobbinsandbears",
+    score: 74,
+    verdict: "This channel has strong fundamentals with consistent upload cadence and good audience retention for the age group. Main opportunity is in the merchandise and YouTube Shopping layer — the audience is there but isn't being converted. COPPA compliance is solid.",
+    metrics: [
+      { name: "Estimated RPM (Made for Kids)", value: "£0.85", sub: "Benchmark: £0.70–£1.20 for strong kids channels", status: "good", pct: 65 },
+      { name: "Upload Cadence", value: "2× week", sub: "Consistent — algorithm rewards regularity. Maintain this.", status: "good", pct: 80 },
+      { name: "Avg View Duration", value: "68%", sub: "Strong for 0-6. Benchmark is 55-70%. Content is holding attention.", status: "good", pct: 68 },
+      { name: "COPPA Compliance", value: "Compliant", sub: "Made for Kids designation correct. No behavioural tracking detected.", status: "good", pct: 90 },
+      { name: "Subscriber Growth (90d)", value: "+4.2%", sub: "Healthy organic growth. No signs of artificial inflation.", status: "good", pct: 60 },
+      { name: "YouTube Shopping Active", value: "No", sub: "Significant missed opportunity — audience exists but merch layer absent.", status: "bad", pct: 0 },
+      { name: "Shorts Strategy", value: "Weak", sub: "Only 3 Shorts in last 90 days. Shorts drive discovery for new audiences.", status: "warn", pct: 25 },
+      { name: "Community Engagement", value: "Low", sub: "Made for Kids restrictions limit comments — expected, but parent engagement tactics unused.", status: "warn", pct: 30 }
+    ],
+    recs: [
+      { priority: "high", title: "Activate YouTube Shopping immediately", body: "Your audience is primed for merchandise. Set up YouTube Shopping with a print-on-demand partner (Printful, Gelato) or existing licensee. This is your highest near-term revenue lever." },
+      { priority: "high", title: "Build a Shorts pipeline", body: "Repurpose your strongest 7-second moments as Shorts. 3 Shorts per week dramatically expands discovery reach. Algorithm treats Shorts as a separate discovery surface — you're missing a free audience acquisition channel." },
+      { priority: "med", title: "Parent community strategy", body: "Comments are restricted but you can engage parents via Community posts, channel descriptions, and linked social channels. Build a parent audience alongside the child audience — they control the watching environment and purchasing decisions." },
+      { priority: "low", title: "Consider a second window strategy", body: "With this audience size and retention, approach CBeebies iPlayer or a regional broadcaster for a licensing conversation. YouTube data is now your proof of concept." }
+    ]
+  },
+  average: {
+    name: "Puddle Pals",
+    url: "youtube.com/@puddlepals",
+    score: 48,
+    verdict: "Average performance across most metrics with a concerning drop in upload consistency over the last quarter. RPM is below benchmark and there are COPPA compliance questions around the channel description that should be reviewed urgently.",
+    metrics: [
+      { name: "Estimated RPM (Made for Kids)", value: "£0.42", sub: "Below benchmark — inconsistent content category signals confusing ad system.", status: "warn", pct: 35 },
+      { name: "Upload Cadence", value: "Irregular", sub: "3 uploads in last 30 days. Algorithm penalises inconsistency heavily.", status: "bad", pct: 25 },
+      { name: "Avg View Duration", value: "51%", sub: "Below 55% benchmark. Content may be losing attention in first 90 seconds.", status: "warn", pct: 51 },
+      { name: "COPPA Compliance", value: "⚠ Review", sub: "Channel description contains language that may attract adult viewers — review Made for Kids designation.", status: "warn", pct: 50 },
+      { name: "Subscriber Growth (90d)", value: "+0.8%", sub: "Stagnant. New content not driving discovery.", status: "warn", pct: 20 },
+      { name: "YouTube Shopping Active", value: "No", sub: "No merchandise layer.", status: "bad", pct: 0 },
+      { name: "Shorts Strategy", value: "None", sub: "Zero Shorts in 90 days. No discovery pipeline.", status: "bad", pct: 0 },
+      { name: "Community Engagement", value: "None", sub: "No Community posts in 60 days. Parent audience uninformed.", status: "bad", pct: 5 }
+    ],
+    recs: [
+      { priority: "high", title: "Fix COPPA compliance immediately", body: "Review your Made for Kids designation and channel description. Mixed signals cost you RPM and create legal exposure. Everything — channel art, description, keywords — should be clearly child-directed." },
+      { priority: "high", title: "Establish a fixed upload schedule", body: "Commit to 1 upload per week minimum on the same day. Consistency is more important than frequency. The algorithm rewards predictability — irregular upload patterns actively suppress your reach." },
+      { priority: "high", title: "Diagnose the drop-off point", body: "51% average view duration suggests viewers are leaving early. Review your first 90 seconds on the 5 most recent uploads. Opening hook, pacing and character re-introduction are common culprits for 0-6 content." },
+      { priority: "med", title: "Start Shorts this week", body: "Pick your 3 best character moments from existing content. Crop to vertical. Post. This costs no new production budget and can meaningfully move discovery metrics within 30 days." }
+    ]
+  },
+  weak: {
+    name: "Zippety Zoo",
+    url: "youtube.com/@zippetyzoo",
+    score: 22,
+    verdict: "Critical issues across multiple dimensions. This channel is not viable as a business in its current state. COPPA compliance is unclear, RPM is extremely low, and the channel shows signs of algorithmic suppression. Fundamental strategy review required before further production investment.",
+    metrics: [
+      { name: "Estimated RPM (Made for Kids)", value: "£0.18", sub: "Critically low. Possible category mismatch or content quality penalty.", status: "bad", pct: 10 },
+      { name: "Upload Cadence", value: "Monthly", sub: "1 upload in 30 days. Algorithm has effectively de-prioritised this channel.", status: "bad", pct: 10 },
+      { name: "Avg View Duration", value: "31%", sub: "Well below benchmark. Significant content or technical issue causing early abandonment.", status: "bad", pct: 31 },
+      { name: "COPPA Compliance", value: "⚠ Unclear", sub: "Mixed audience signals. Some videos marked for kids, others not. Inconsistency creates legal and revenue risk.", status: "bad", pct: 20 },
+      { name: "Subscriber Growth (90d)", value: "-0.3%", sub: "Declining subscriber count. Existing audience disengaging.", status: "bad", pct: 5 },
+      { name: "YouTube Shopping Active", value: "No", sub: "No merchandise layer.", status: "bad", pct: 0 },
+      { name: "Shorts Strategy", value: "None", sub: "No Shorts. No discovery pipeline.", status: "bad", pct: 0 },
+      { name: "Thumbnail Consistency", value: "Poor", sub: "Inconsistent visual style across thumbnails. No recognisable brand signals.", status: "bad", pct: 10 }
+    ],
+    recs: [
+      { priority: "high", title: "Stop uploading until strategy is fixed", body: "More content into a broken system will not help. Pause production and address the fundamentals first — COPPA compliance, content quality, upload strategy — then relaunch with a coherent plan." },
+      { priority: "high", title: "Audit every video's COPPA designation", body: "Go through every upload and ensure Made for Kids is consistently set. Inconsistency is costing you on RPM and creating regulatory exposure. Do this in a single session." },
+      { priority: "high", title: "31% view duration requires content surgery", body: "Something fundamental is wrong with content quality or pacing. Watch your 5 lowest performing videos as if you are a 3-year-old. Where does interest drop? This is likely the first 60 seconds." },
+      { priority: "med", title: "Consider pivoting to a different distribution strategy", body: "YouTube may not be the right first window for this property. Consider whether a broadcaster pitch — using the existing content as a proof of concept — would be a more appropriate route to audience." }
+    ]
+  }
+};
+
+function runDemo(type) {
+  const data = demos[type];
+  document.getElementById('urlInput').value = data.url;
+  showLoading();
+  setTimeout(() => showResults(data), 1800);
+}
+
+function runCheck() {
+  const url = document.getElementById('urlInput').value;
+  if (!url) return;
+  showLoading();
+  setTimeout(() => {
+    const score = Math.floor(Math.random() * 60) + 20;
+    const types = ['strong', 'average', 'weak'];
+    const type = score > 65 ? 'strong' : score > 40 ? 'average' : 'weak';
+    showResults(demos[type]);
+  }, 2000);
+}
+
+function showLoading() {
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('results').classList.remove('active');
+}
+
+function showResults(data) {
+  document.getElementById('loading').classList.remove('active');
+  const r = document.getElementById('results');
+  r.classList.add('active');
+
+  const scoreColor = data.score >= 65 ? 'var(--green)' : data.score >= 40 ? 'var(--amber)' : 'var(--red)';
+  const scoreLabel = data.score >= 65 ? 'Healthy Channel' : data.score >= 40 ? 'Needs Attention' : 'Critical Issues';
+  const circumference = 340;
+  const offset = circumference - (data.score / 100) * circumference;
+
+  const metricsHtml = data.metrics.map((m, i) => {
+    const barColor = m.status === 'good' ? 'var(--green)' : m.status === 'warn' ? 'var(--amber)' : 'var(--red)';
+    return `
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-name">${m.name}</div>
+          <div class="metric-status status-${m.status}"></div>
+        </div>
+        <div class="metric-value" style="color:${barColor}">${m.value}</div>
+        <div class="metric-subtext">${m.sub}</div>
+        <div class="metric-bar">
+          <div class="metric-bar-fill" style="background:${barColor};width:0%" data-target="${m.pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const recsHtml = data.recs.map((r, i) => `
+    <div class="rec-item" style="animation-delay:${i * 0.1}s">
+      <span class="rec-priority priority-${r.priority}">${r.priority.toUpperCase()}</span>
+      <div class="rec-content">
+        <h4>${r.title}</h4>
+        <p>${r.body}</p>
+      </div>
+    </div>
+  `).join('');
+
+  r.innerHTML = `
+    <div class="score-hero">
+      <div class="score-dial">
+        <svg viewBox="0 0 120 120">
+          <circle class="track" cx="60" cy="60" r="54"/>
+          <circle class="fill" cx="60" cy="60" r="54" stroke="${scoreColor}" id="scoreFill" style="stroke-dashoffset:${circumference}"/>
+        </svg>
+        <div class="score-number">
+          <div class="num" style="color:${scoreColor}">${data.score}</div>
+          <div class="out-of">/100</div>
+        </div>
+      </div>
+      <div class="score-info">
+        <div style="font-family:'Syne Mono',monospace;font-size:10px;letter-spacing:3px;color:${scoreColor};text-transform:uppercase;margin-bottom:8px">${scoreLabel}</div>
+        <h2>${data.name}</h2>
+        <p class="score-verdict">${data.verdict}</p>
+      </div>
+    </div>
+
+    <div class="metrics-grid">${metricsHtml}</div>
+
+    <div class="rec-section">
+      <div class="rec-title">Recommendations</div>
+      ${recsHtml}
+    </div>
+  `;
+
+  setTimeout(() => {
+    const fill = document.getElementById('scoreFill');
+    if (fill) fill.style.strokeDashoffset = circumference - (data.score / 100) * circumference;
+    document.querySelectorAll('.metric-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.target;
+    });
+  }, 100);
+}
+</script>
+</body>
+</html>
