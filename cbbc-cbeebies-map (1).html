@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBeebies & CBBC — UK Production Ecosystem</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bbc-red:   #C0191A;
+  --studio:    #1C6845;
+  --postprod:  #6B38A0;
+  --filming:   #A0720E;
+  --bg:        #F4EFE6;
+  --panel:     #FDFAF4;
+  --ink:       #1C1610;
+  --ink-mid:   #4A4035;
+  --ink-light: #8A7D70;
+  --border:    #DDD4C0;
+  --hover:     #EDE6D6;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); }
+
+/* HEADER */
+.header { height: 52px; background: var(--ink); display: flex; align-items: center; padding: 0 20px; gap: 14px; flex-shrink: 0; position: relative; z-index: 200; }
+.header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--bbc-red) 0%, #E85020 40%, #2C5F8A 100%); }
+.bbc-pill { background: var(--bbc-red); color: #fff; font-family: 'Fraunces', serif; font-weight: 600; font-size: 12px; letter-spacing: .08em; padding: 3px 9px; border-radius: 3px; flex-shrink: 0; }
+.header-title { font-family: 'Fraunces', serif; font-weight: 300; font-size: 17px; color: #fff; }
+.header-title em { font-style: italic; color: #C0B8AC; }
+.header-spacer { flex: 1; }
+.header-stat { font-size: 11px; color: #786C60; letter-spacing: .06em; text-transform: uppercase; }
+
+/* LEGEND */
+.legend-bar { height: 40px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 4px; flex-shrink: 0; overflow-x: auto; }
+.legend-bar::-webkit-scrollbar { display: none; }
+.legend-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-light); font-weight: 600; padding-right: 8px; flex-shrink: 0; }
+.leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-mid); padding: 4px 10px; border-radius: 20px; border: 1.5px solid transparent; cursor: pointer; white-space: nowrap; transition: all .15s; flex-shrink: 0; }
+.leg:hover { background: var(--hover); }
+.leg.on { border-color: var(--border); background: var(--hover); font-weight: 600; }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* SPLIT */
+.split { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 92px); }
+
+/* MAP SIDE */
+.map-side { flex: 1; position: relative; min-width: 0; background: #B8D4DE; overflow: hidden; }
+
+/* The map container — holds the Wikipedia image + SVG pin overlay perfectly aligned */
+#map-wrap {
+  position: absolute;
+  /* We'll size and position this via JS to fit the map-side div */
+  top: 0; left: 0;
+}
+
+#map-img {
+  display: block;
+  /* actual Wikipedia UK location map — bounding box W:-8.17 E:1.76 N:60.86 S:49.96 */
+}
+
+#pin-svg {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none; /* clicks pass through to pins themselves */
+  overflow: visible;
+}
+
+/* Tooltip */
+.tip {
+  position: absolute;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .12s;
+  z-index: 100;
+  transform: translate(-50%, -140%);
+}
+.tip.show { opacity: 1; }
+
+/* Drawer */
+.drawer { position: absolute; bottom: 0; left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--border); border-radius: 14px 14px 0 0; box-shadow: 0 -6px 28px rgba(0,0,0,.14); padding: 16px 20px 24px; z-index: 50; transform: translateY(100%); transition: transform .25s cubic-bezier(.4,0,.2,1); max-height: 55%; overflow-y: auto; }
+.drawer.open { transform: translateY(0); }
+.drawer-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+.drawer-inner { display: flex; gap: 16px; align-items: flex-start; }
+.drawer-logo { width: 72px; height: 72px; border-radius: 10px; border: 1px solid var(--border); background: #fff; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.drawer-logo img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+.drawer-body { flex: 1; min-width: 0; }
+.drawer-name { font-family: 'Fraunces', serif; font-weight: 300; font-size: 20px; line-height: 1.2; margin-bottom: 3px; }
+.drawer-city { font-size: 12px; color: var(--ink-light); margin-bottom: 8px; }
+.drawer-shows-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-light); font-weight: 600; margin-bottom: 4px; }
+.drawer-shows { font-size: 13px; color: var(--ink); line-height: 1.55; margin-bottom: 10px; }
+.drawer-link { font-size: 12px; color: var(--bbc-red); text-decoration: none; font-weight: 500; }
+.drawer-link:hover { text-decoration: underline; }
+.drawer-close { position: absolute; top: 16px; right: 16px; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--ink-mid); line-height: 1; }
+.drawer-close:hover { background: var(--hover); }
+.type-pip { display: inline-block; font-size: 9px; text-transform: uppercase; letter-spacing: .07em; font-weight: 600; padding: 2px 6px; border-radius: 3px; margin-bottom: 6px; }
+
+/* DIR SIDE */
+.dir-side { width: 50%; flex-shrink: 0; background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.dir-search { padding: 10px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+.dir-search svg { flex-shrink: 0; color: var(--ink-light); }
+.dir-search input { flex: 1; border: none; background: none; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); outline: none; }
+.dir-search input::placeholder { color: var(--ink-light); }
+.dir-grid { flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+.dir-grid::-webkit-scrollbar { width: 4px; }
+.dir-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* CARDS */
+.card { background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 12px; cursor: pointer; transition: all .15s; display: flex; flex-direction: column; gap: 8px; }
+.card:hover { border-color: #C0B0A0; background: var(--hover); transform: translateY(-1px); box-shadow: 0 3px 12px rgba(0,0,0,.07); }
+.card.active { border-color: var(--bbc-red); background: var(--hover); box-shadow: 0 0 0 2px rgba(192,25,26,.12); }
+.card-top { display: flex; align-items: flex-start; gap: 10px; }
+.logo-wrap { width: 48px; height: 48px; border-radius: 6px; border: 1px solid var(--border); background: #fff; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.logo-wrap img { width: 100%; height: 100%; object-fit: contain; padding: 5px; }
+.logo-initial { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 20px; font-weight: 300; color: #fff; }
+.card-meta { flex: 1; min-width: 0; }
+.card-name { font-size: 12px; font-weight: 600; line-height: 1.3; color: var(--ink); }
+.card-city { font-size: 11px; color: var(--ink-light); margin-top: 2px; }
+.card-shows { font-size: 11px; color: var(--ink-mid); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.empty-state { grid-column: 1/-1; text-align: center; padding: 40px 20px; color: var(--ink-light); font-size: 13px; }
+
+/* Attribution */
+.map-credit { position: absolute; bottom: 4px; left: 6px; font-size: 9px; color: rgba(0,0,0,0.35); z-index: 10; pointer-events: none; }
+
+@media(max-width:900px) { .split { flex-direction: column; } .map-side { height: 45%; flex: none; } .dir-side { width: 100%; flex: 1; border-left: none; border-top: 1px solid var(--border); } }
+@media(max-width:600px) { .dir-grid { grid-template-columns: 1fr; } .header-title { font-size: 14px; } }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="bbc-pill">BBC</div>
+  <div class="header-title">UK Children's Television <em>Production Ecosystem</em></div>
+  <div class="header-spacer"></div>
+  <div class="header-stat" id="stat">18 locations</div>
+</header>
+
+<div class="legend-bar">
+  <span class="legend-lbl">Show:</span>
+  <div class="leg on"  onclick="setFilter('all',this)">    <span class="leg-dot" style="background:#888"></span>All</div>
+  <div class="leg"     onclick="setFilter('bbc',this)">    <span class="leg-dot" style="background:#C0191A"></span>BBC Offices</div>
+  <div class="leg"     onclick="setFilter('studio',this)"> <span class="leg-dot" style="background:#1C6845"></span>Indie Studios</div>
+  <div class="leg"     onclick="setFilter('postprod',this)"><span class="leg-dot" style="background:#6B38A0"></span>Animation &amp; Post</div>
+  <div class="leg"     onclick="setFilter('filming',this)"> <span class="leg-dot" style="background:#A0720E"></span>Filming Facilities</div>
+</div>
+
+<div class="split">
+
+  <!-- MAP -->
+  <div class="map-side" id="map-side">
+
+    <div id="map-wrap">
+      <!--
+        Wikipedia "United Kingdom location map" (CC BY-SA 3.0, Sting/Jarke)
+        Bounding box: W -8.17°, E 1.76°, N 60.86°, S 49.96°
+        Image dims: 886 × 1369 px (native)
+      -->
+      <img id="map-img"
+           src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/United_Kingdom_location_map.svg/886px-United_Kingdom_location_map.svg.png"
+           alt="Map of the United Kingdom">
+
+      <!-- SVG pin overlay — same dimensions as the rendered img -->
+      <svg id="pin-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div class="map-credit">Map © Sting/Jarke, Wikimedia Commons CC BY-SA 3.0</div>
+    <div class="tip" id="tip"></div>
+
+    <!-- Detail drawer -->
+    <div class="drawer" id="drawer">
+      <button class="drawer-close" onclick="closeDrawer()">×</button>
+      <div class="drawer-handle"></div>
+      <div class="drawer-inner">
+        <div class="drawer-logo" id="d-logo"></div>
+        <div class="drawer-body">
+          <div id="d-type"></div>
+          <div class="drawer-name" id="d-name"></div>
+          <div class="drawer-city" id="d-city"></div>
+          <div class="drawer-shows-lbl">Shows / Role</div>
+          <div class="drawer-shows" id="d-shows"></div>
+          <a class="drawer-link" id="d-link" href="#" target="_blank" rel="noopener"></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECTORY -->
+  <div class="dir-side">
+    <div class="dir-search">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="q" placeholder="Search studios, shows, cities…" oninput="applyFilters()">
+    </div>
+    <div class="dir-grid" id="grid"></div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  Wikipedia UK location map bounding box
+//  (matches United_Kingdom_location_map.svg exactly)
+// ─────────────────────────────────────────────
+const MAP_W_DEG  = -8.17,  MAP_E_DEG = 1.76;
+const MAP_N_DEG  =  60.86, MAP_S_DEG = 49.96;
+// Native image pixel size
+const IMG_W_PX   = 886,    IMG_H_PX  = 1369;
+
+function latLonToImgPx(lat, lon) {
+  const x = ((lon - MAP_W_DEG) / (MAP_E_DEG - MAP_W_DEG)) * IMG_W_PX;
+  const y = ((MAP_N_DEG - lat) / (MAP_N_DEG - MAP_S_DEG)) * IMG_H_PX;
+  return { x, y };
+}
+
+// Convert native-image px → displayed px (the img is scaled to fit the container)
+function imgPxToDisplayPx(ix, iy) {
+  const img = document.getElementById('map-img');
+  const scaleX = img.clientWidth  / IMG_W_PX;
+  const scaleY = img.clientHeight / IMG_H_PX;
+  return { x: ix * scaleX, y: iy * scaleY };
+}
+
+// ─────────────────────────────────────────────
+//  Data
+// ─────────────────────────────────────────────
+const COLORS = { bbc:'#C0191A', studio:'#1C6845', postprod:'#6B38A0', filming:'#A0720E' };
+const LABELS = { bbc:'BBC Office', studio:'Indie Studio', postprod:'Animation & Post', filming:'Filming Facility' };
+
+const DATA = [
+  { id:1,  type:'bbc',      name:"BBC Children's & Education — MediaCityUK", city:"Salford, Manchester",     lat:53.4727, lon:-2.2986,
+    logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/BBC_CBeebies.svg/200px-BBC_CBeebies.svg.png",
+    shows:"BBC Children's & Education commissioning HQ. CBeebies and CBBC commissioning, development and editorial teams based here since 2011.", web:"https://www.bbc.co.uk/cbbc" },
+  { id:2,  type:'bbc',      name:"BBC Broadcasting House",                    city:"London W1A",             lat:51.5189, lon:-0.1439,
+    logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_logo_%282021%29.svg/200px-BBC_logo_%282021%29.svg.png",
+    shows:"BBC HQ. BBC Studios Kids & Family Productions (London). Senior BBC leadership and commissioning strategy.", web:"https://www.bbc.co.uk" },
+  { id:3,  type:'bbc',      name:"BBC Scotland — Pacific Quay",               city:"Glasgow",                lat:55.858,  lon:-4.2912,
+    logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_logo_%282021%29.svg/200px-BBC_logo_%282021%29.svg.png",
+    shows:"BBC Scotland regional hub. Filming base for CBeebies shows including Playtime Towers and Waterloo Road (CBBC).", web:"https://www.bbc.co.uk/scotland" },
+  { id:4,  type:'bbc',      name:"BBC Northern Ireland — Ormeau Avenue",      city:"Belfast",                lat:54.5933, lon:-5.9307,
+    logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_logo_%282021%29.svg/200px-BBC_logo_%282021%29.svg.png",
+    shows:"BBC NI regional commissioning. Co-produced Sesame Tree with Sixteen South. Regional champion for Northern Ireland productions.", web:"https://www.bbc.co.uk/northernireland" },
+  { id:5,  type:'filming',  name:"BBC Roath Lock — Cardiff Bay",               city:"Cardiff, Wales",         lat:51.4618, lon:-3.1566,
+    logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_logo_%282021%29.svg/200px-BBC_logo_%282021%29.svg.png",
+    shows:"BBC Cymru Wales drama village. BBC One and CBBC drama filming. Co-production base for Welsh and S4C partnerships.", web:"https://www.bbc.co.uk/wales" },
+  { id:6,  type:'filming',  name:"dock10 Studios — MediaCityUK",               city:"Salford, Manchester",    lat:53.473,  lon:-2.300,
+    logo:"https://www.dock10.co.uk/wp-content/themes/dock10/images/dock10-logo.svg",
+    shows:"Largest studio complex outside London. Swashbuckle, Justin's House, Saturday Mash-Up!, Blue Peter, The Furchester Hotel filmed here.", web:"https://www.dock10.co.uk" },
+  { id:7,  type:'postprod', name:"Aardman Animations",                         city:"Bristol",                lat:51.4474, lon:-2.6078,
+    logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Aardman_Logo.svg/200px-Aardman_Logo.svg.png",
+    shows:"Shaun the Sheep (CBBC/BBC One), Morph (CBBC), Creature Comforts. Multi-Academy Award & BAFTA-winning stop-motion studio. Founded 1976.", web:"https://www.aardman.com" },
+  { id:8,  type:'studio',   name:"A Productions",                              city:"Bristol",                lat:51.455,  lon:-2.595,
+    logo:"https://www.aproductions.co.uk/wp-content/uploads/2019/08/a-productions-logo.png",
+    shows:"JoJo & Gran Gran (CBeebies), Love Monster (CBeebies, with Karrot), My Friend Maisy (in production).", web:"https://www.aproductions.co.uk" },
+  { id:9,  type:'studio',   name:"Ragdoll Productions",                        city:"Stratford-upon-Avon",    lat:52.2038, lon:-1.7290,
+    logo:"https://upload.wikimedia.org/wikipedia/en/thumb/f/f7/Ragdoll_logo.svg/200px-Ragdoll_logo.svg.png",
+    shows:"Teletubbies, In the Night Garden, Twirlywoos, Abney & Teal (all CBeebies). Founded 1984 by Anne Wood. Legendary preschool IP house.", web:"https://www.ragdoll.co.uk" },
+  { id:10, type:'postprod', name:"Mackinnon & Saunders",                       city:"Altrincham, Manchester", lat:53.3937, lon:-2.3722,
+    logo:"https://www.mackinnonandsaunders.com/wp-content/uploads/2020/01/logo-final.png",
+    shows:"Moon & Me (CBeebies), Pinocchio. World-class puppet fabrication and stop-motion production studio.", web:"https://www.mackinnonandsaunders.com" },
+  { id:11, type:'studio',   name:"Cloth Cat Animation",                        city:"Cardiff, Wales",         lat:51.4832, lon:-3.175,
+    logo:"https://www.clothcat.com/wp-content/uploads/2019/09/Cloth-Cat-Logo-Web.png",
+    shows:"Olobob Top, Shane the Chef, Grandpa in My Pocket, Boj (all CBeebies). Wales' largest animation studio.", web:"https://www.clothcat.com" },
+  { id:12, type:'studio',   name:"Maramedia",                                  city:"Glasgow, Scotland",      lat:55.856,  lon:-4.302,
+    logo:"https://maramedia.co.uk/wp-content/uploads/2020/10/maramedia-logo.png",
+    shows:"Olga da Polga (CBeebies), wildlife and factual content for BBC. Scotland's leading children's and natural history indie.", web:"https://maramedia.co.uk" },
+  { id:13, type:'studio',   name:"Sixteen South",                              city:"Holywood, Belfast",      lat:54.641,  lon:-5.834,
+    logo:"https://sixteensouth.tv/wp-content/themes/ss-new/img/sixteen-south-logo.png",
+    shows:"Claude (CBeebies), Lily's Driftwood Bay, Big and Small, Sesame Tree (BBC NI), Big City Park, WildWoods, Odo. BAFTA Indie of the Year 2016.", web:"https://sixteensouth.tv" },
+  { id:14, type:'studio',   name:"Paper Owl Films",                            city:"Sydenham, Belfast",      lat:54.6315, lon:-5.867,
+    logo:"https://www.paperowlfilms.com/wp-content/uploads/2020/03/paper-owl-films-logo.png",
+    shows:"Pablo (CBeebies), Happy the Hoglet (CBeebies), Ladybird & Bee. Pioneering neurodiverse content studio.", web:"https://www.paperowlfilms.com" },
+  { id:15, type:'studio',   name:"JAM Media",                                  city:"Belfast",                lat:54.5936, lon:-5.937,
+    logo:"https://jammedia.com/wp-content/themes/jam-media/assets/img/jam-media-logo.svg",
+    shows:"Beddybyes (CBeebies, in production), Nova Jones S2 (CBBC), Roy (CBBC), Becca's Bunch. Belfast & Dublin operations.", web:"https://jammedia.com" },
+  { id:16, type:'postprod', name:"Blue Zoo Animation Studio",                  city:"Camden, London",         lat:51.5389, lon:-0.143,
+    logo:"https://www.blue-zoo.co.uk/wp-content/themes/bluezoo/assets/img/logo.svg",
+    shows:"Numberblocks (CBeebies), Alphablocks (CBeebies), Colourblocks, Adventures of Paddington, Mojo Swoptops. 200+ artists.", web:"https://www.blue-zoo.co.uk" },
+  { id:17, type:'studio',   name:"Karrot Entertainment",                       city:"London SE17",            lat:51.490,  lon:-0.093,
+    logo:"https://wearekarrot.com/wp-content/themes/karrot/img/karrot-logo.png",
+    shows:"Sarah & Duck (CBeebies), Love Monster (CBeebies), My Friend Maisy (in production). BAFTA & Emmy-winning studio.", web:"https://wearekarrot.com" },
+  { id:18, type:'postprod', name:"Lupus Films",                                city:"Islington, London",      lat:51.5352, lon:-0.104,
+    logo:"https://www.lupusfilms.com/assets/img/lupus-logo.png",
+    shows:"We're Going on a Bear Hunt (BBC), The Tiger Who Came to Tea, Kensuke's Kingdom. Specialist hand-drawn 2D animation.", web:"https://www.lupusfilms.com" }
+];
+
+// ─────────────────────────────────────────────
+//  State
+// ─────────────────────────────────────────────
+let activeFilter = 'all', activeId = null;
+
+// ─────────────────────────────────────────────
+//  Map layout — fit the UK map into the map-side
+//  div while preserving aspect ratio, centred
+// ─────────────────────────────────────────────
+function layoutMap() {
+  const side    = document.getElementById('map-side');
+  const wrap    = document.getElementById('map-wrap');
+  const img     = document.getElementById('map-img');
+  const pinSvg  = document.getElementById('pin-svg');
+
+  const cW = side.clientWidth;
+  const cH = side.clientHeight;
+  const imgAR = IMG_W_PX / IMG_H_PX;
+  const conAR = cW / cH;
+
+  let dW, dH;
+  if (conAR > imgAR) {
+    dH = cH; dW = dH * imgAR;
+  } else {
+    dW = cW; dH = dW / imgAR;
+  }
+
+  const left = (cW - dW) / 2;
+  const top  = (cH - dH) / 2;
+
+  wrap.style.width  = dW + 'px';
+  wrap.style.height = dH + 'px';
+  wrap.style.left   = left + 'px';
+  wrap.style.top    = top  + 'px';
+
+  img.style.width  = dW + 'px';
+  img.style.height = dH + 'px';
+
+  pinSvg.setAttribute('width',  dW);
+  pinSvg.setAttribute('height', dH);
+  pinSvg.setAttribute('viewBox', `0 0 ${dW} ${dH}`);
+
+  // Re-render pins with new scale
+  renderPins(getVisible());
+}
+
+// ─────────────────────────────────────────────
+//  Pin rendering
+// ─────────────────────────────────────────────
+function getDisplayXY(lat, lon) {
+  const { x: ix, y: iy } = latLonToImgPx(lat, lon);
+  const img = document.getElementById('map-img');
+  const scaleX = img.clientWidth  / IMG_W_PX;
+  const scaleY = img.clientHeight / IMG_H_PX;
+  return { x: ix * scaleX, y: iy * scaleY };
+}
+
+function renderPins(visible) {
+  const svg = document.getElementById('pin-svg');
+  svg.innerHTML = '';
+
+  // Define drop shadow filter once
+  svg.innerHTML = `<defs>
+    <filter id="pshadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-opacity="0.25"/>
+    </filter>
+  </defs>`;
+
+  DATA.forEach(loc => {
+    const isVis = !!visible.find(l => l.id === loc.id);
+    const { x, y } = getDisplayXY(loc.lat, loc.lon);
+    const c = COLORS[loc.type];
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('transform', `translate(${x},${y})`);
+    g.setAttribute('opacity', isVis ? '1' : '0.18');
+    g.style.cursor = isVis ? 'pointer' : 'default';
+
+    // Active halo
+    if (activeId === loc.id && isVis) {
+      const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      halo.setAttribute('cx', '0'); halo.setAttribute('cy', '-10');
+      halo.setAttribute('r', '14');
+      halo.setAttribute('fill', c); halo.setAttribute('opacity', '0.2');
+      g.appendChild(halo);
+    }
+
+    // Pin path — teardrop
+    const pin = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pin.setAttribute('d', 'M0,-22 C-7,-22 -12,-16 -12,-10 C-12,-3 0,8 0,8 C0,8 12,-3 12,-10 C12,-16 7,-22 0,-22 Z');
+    pin.setAttribute('fill', c);
+    pin.setAttribute('stroke', 'white');
+    pin.setAttribute('stroke-width', '1.8');
+    pin.setAttribute('filter', 'url(#pshadow)');
+    g.appendChild(pin);
+
+    // White dot in pin
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dot.setAttribute('cx', '0'); dot.setAttribute('cy', '-10');
+    dot.setAttribute('r', '4');
+    dot.setAttribute('fill', 'white');
+    dot.setAttribute('opacity', '0.9');
+    g.appendChild(dot);
+
+    if (isVis) {
+      g.style.pointerEvents = 'all';
+      g.addEventListener('mouseenter', e => {
+        const tip = document.getElementById('tip');
+        const wrap = document.getElementById('map-wrap');
+        const wRect = wrap.getBoundingClientRect();
+        const mapSide = document.getElementById('map-side');
+        const sRect = mapSide.getBoundingClientRect();
+        tip.textContent = loc.name + ' · ' + loc.city;
+        tip.style.left = (wRect.left - sRect.left + x) + 'px';
+        tip.style.top  = (wRect.top  - sRect.top  + y) + 'px';
+        tip.classList.add('show');
+      });
+      g.addEventListener('mouseleave', () => document.getElementById('tip').classList.remove('show'));
+      g.addEventListener('click', () => selectLoc(loc));
+    }
+
+    svg.appendChild(g);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  Select
+// ─────────────────────────────────────────────
+function selectLoc(loc) {
+  if (activeId) {
+    const p = document.getElementById('card-' + activeId);
+    if (p) p.classList.remove('active');
+  }
+  activeId = loc.id;
+  const card = document.getElementById('card-' + loc.id);
+  if (card) { card.classList.add('active'); card.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+
+  renderPins(getVisible());
+
+  const c = COLORS[loc.type];
+  const dLogo = document.getElementById('d-logo');
+  dLogo.innerHTML = '';
+  const img = document.createElement('img');
+  img.src = loc.logo; img.alt = '';
+  img.onerror = () => { dLogo.innerHTML = `<div style="width:100%;height:100%;background:${c};display:flex;align-items:center;justify-content:center;border-radius:10px;font-family:'Fraunces',serif;font-size:28px;color:#fff">${loc.name[0]}</div>`; };
+  dLogo.appendChild(img);
+
+  document.getElementById('d-type').innerHTML  = `<span class="type-pip" style="background:${c}1A;color:${c};border:1px solid ${c}55">${LABELS[loc.type]}</span>`;
+  document.getElementById('d-name').textContent = loc.name;
+  document.getElementById('d-city').textContent = '📍 ' + loc.city;
+  document.getElementById('d-shows').textContent = loc.shows;
+  const lnk = document.getElementById('d-link');
+  lnk.href = loc.web; lnk.textContent = '→ ' + loc.web.replace(/^https?:\/\//,'');
+  document.getElementById('drawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  if (activeId) {
+    const p = document.getElementById('card-' + activeId);
+    if (p) p.classList.remove('active');
+    activeId = null;
+    renderPins(getVisible());
+  }
+}
+
+// ─────────────────────────────────────────────
+//  Cards
+// ─────────────────────────────────────────────
+function mkImg(src, color, init) {
+  const img = document.createElement('img'); img.src = src; img.alt = '';
+  img.onerror = () => { const d = document.createElement('div'); d.className = 'logo-initial'; d.style.background = color; d.textContent = init; img.replaceWith(d); };
+  return img;
+}
+
+function buildCards(list) {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  document.getElementById('stat').textContent = list.length + ' location' + (list.length !== 1 ? 's' : '');
+  if (!list.length) { grid.innerHTML = '<div class="empty-state">No matching locations found.</div>'; return; }
+  list.forEach(loc => {
+    const c = COLORS[loc.type];
+    const card = document.createElement('div');
+    card.className = 'card' + (activeId === loc.id ? ' active' : '');
+    card.id = 'card-' + loc.id;
+    card.onclick = () => selectLoc(loc);
+    const lw = document.createElement('div'); lw.className = 'logo-wrap'; lw.appendChild(mkImg(loc.logo, c, loc.name[0]));
+    const meta = document.createElement('div'); meta.className = 'card-meta';
+    meta.innerHTML = `<span class="type-pip" style="background:${c}1A;color:${c};border:1px solid ${c}44">${LABELS[loc.type]}</span><div class="card-name">${loc.name}</div><div class="card-city">${loc.city}</div>`;
+    const top = document.createElement('div'); top.className = 'card-top'; top.appendChild(lw); top.appendChild(meta);
+    const shows = document.createElement('div'); shows.className = 'card-shows'; shows.textContent = loc.shows;
+    card.appendChild(top); card.appendChild(shows); grid.appendChild(card);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  Filters
+// ─────────────────────────────────────────────
+function getVisible() {
+  const q = document.getElementById('q').value.toLowerCase().trim();
+  return DATA.filter(loc => {
+    const typeOk = activeFilter === 'all' || loc.type === activeFilter;
+    const textOk = !q || [loc.name, loc.city, loc.shows].some(s => s.toLowerCase().includes(q));
+    return typeOk && textOk;
+  });
+}
+
+function setFilter(type, el) {
+  document.querySelectorAll('.leg').forEach(l => l.classList.remove('on'));
+  el.classList.add('on'); activeFilter = type; applyFilters();
+}
+
+function applyFilters() {
+  const vis = getVisible();
+  buildCards(vis);
+  renderPins(vis);
+}
+
+// ─────────────────────────────────────────────
+//  Init
+// ─────────────────────────────────────────────
+const mapImg = document.getElementById('map-img');
+mapImg.onload = () => { layoutMap(); };
+// If already cached
+if (mapImg.complete) layoutMap();
+
+window.addEventListener('resize', layoutMap);
+
+buildCards(DATA);
+</script>
+</body>
+</html>
