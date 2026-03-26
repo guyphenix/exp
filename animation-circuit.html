@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animation Circuit</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Boogaloo&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --y:#FFE034;--o:#FF6B35;--pk:#FF3FA4;--tl:#00D4C8;--pu:#8B31D4;
+  --bl:#1B4FFF;--gn:#30D158;--rd:#FF2D55;--bk:#14121E;--wh:#FFFCF0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--wh);min-height:100vh;overflow-x:hidden;}
+
+.mbg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.mbg svg{width:100%;height:100%;}
+
+header{position:relative;z-index:20;background:var(--bk);}
+.hs{height:10px;background:repeating-linear-gradient(90deg,var(--y) 0 50px,var(--o) 50px 100px,var(--pk) 100px 150px,var(--tl) 150px 200px,var(--pu) 200px 250px,var(--bl) 250px 300px);}
+.hi{display:flex;align-items:center;justify-content:space-between;padding:22px 36px;gap:20px;flex-wrap:wrap;}
+.lw{display:flex;align-items:center;gap:18px;}
+.lm{width:70px;height:70px;flex-shrink:0;background:var(--y);border-radius:50%;border:4px solid var(--o);display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:'Black Han Sans',sans-serif;font-size:10px;color:var(--bk);text-align:center;line-height:1.15;transform:rotate(-6deg);position:relative;}
+.lm::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px dashed rgba(255,224,52,.35);}
+.lt h1{font-family:'Black Han Sans',sans-serif;font-size:36px;color:var(--y);letter-spacing:1px;line-height:1;text-shadow:4px 4px 0 var(--o);}
+.lt p{font-family:'Boogaloo',sans-serif;font-size:13px;color:rgba(255,255,255,.55);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px;}
+.hr{text-align:right;font-family:'Boogaloo',sans-serif;font-size:15px;color:var(--tl);line-height:1.5;}
+
+.tb{position:sticky;top:0;z-index:50;background:var(--bk);border-bottom:3px solid var(--o);padding:11px 36px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.tbl{font-family:'Boogaloo',sans-serif;font-size:12px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;}
+.pill{font-family:'Boogaloo',sans-serif;font-size:14px;padding:5px 15px;border-radius:20px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.65);cursor:pointer;transition:all .13s;letter-spacing:.3px;}
+.pill:hover{transform:translateY(-1px);}
+.pill.on{color:var(--bk);border-color:transparent;}
+.pill[data-f="all"].on{background:var(--y);}
+.pill[data-f="hot"].on{background:var(--rd);color:#fff;}
+.pill[data-f="market"].on{background:var(--o);color:#fff;}
+.pill[data-f="festival"].on{background:var(--bl);color:#fff;}
+.pill[data-f="pitching"].on{background:var(--gn);}
+.pill[data-f="copro"].on{background:var(--pu);color:#fff;}
+.pill[data-f="online"].on{background:var(--tl);}
+.tbdiv{width:1px;height:22px;background:rgba(255,255,255,.12);flex-shrink:0;}
+.tbs{margin-left:auto;position:relative;}
+.tbs input{font-family:'Nunito',sans-serif;font-size:13px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 14px 5px 34px;color:#fff;width:190px;outline:none;transition:border .2s;}
+.tbs input::placeholder{color:rgba(255,255,255,.3);}
+.tbs input:focus{border-color:var(--y);}
+.tbs .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:rgba(255,255,255,.35);}
+
+main{position:relative;z-index:5;max-width:1180px;margin:0 auto;padding:36px 24px 100px;}
+
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px;}
+.sc{font-family:'Boogaloo',sans-serif;font-size:16px;background:#fff;border:2.5px solid var(--bk);box-shadow:3px 3px 0 var(--bk);border-radius:12px;padding:6px 18px;color:var(--bk);}
+.sc b{color:var(--o);font-size:18px;}
+
+.leg{background:#fff;border:3px solid var(--bk);box-shadow:4px 4px 0 var(--bk);border-radius:16px;padding:18px 22px;margin-bottom:28px;}
+.leg-t{font-family:'Black Han Sans',sans-serif;font-size:13px;letter-spacing:1px;margin-bottom:10px;}
+.leg-row{display:flex;flex-wrap:wrap;gap:22px;}
+.leg-g{}
+.leg-sub{font-family:'Boogaloo',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:5px;}
+.leg-it{display:flex;flex-wrap:wrap;gap:6px;}
+.sg{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.sgi{display:flex;align-items:center;gap:5px;font-size:12px;color:#555;}
+.sgn{font-family:'Black Han Sans',sans-serif;font-size:19px;}
+.s5{color:var(--rd);}.s4{color:var(--o);}.s3{color:#E6A800;}.s2{color:#888;}
+
+.mb{margin-bottom:52px;}
+.mb.gone{display:none;}
+.mhdr{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.mn{font-family:'Black Han Sans',sans-serif;font-size:20px;background:var(--bk);color:var(--y);padding:7px 22px;border-radius:30px;border:3px solid var(--y);text-shadow:2px 2px 0 var(--o);flex-shrink:0;position:relative;}
+.mn::before{content:'';position:absolute;inset:-5px;border-radius:34px;border:2px dashed rgba(255,224,52,.2);}
+.mdash{flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--bk) 0 8px,transparent 8px 14px);opacity:.18;}
+.mtal{font-family:'Boogaloo',sans-serif;font-size:13px;color:rgba(0,0,0,.32);flex-shrink:0;}
+
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px;}
+
+.card{background:#fff;border-radius:18px;border:3px solid var(--bk);box-shadow:6px 6px 0 var(--bk);overflow:hidden;transition:transform .14s,box-shadow .14s;position:relative;}
+.card:hover{transform:translate(-2px,-3px);box-shadow:8px 9px 0 var(--bk);}
+.card.out{display:none;}
+.card.ess{border-color:var(--rd);box-shadow:6px 6px 0 var(--rd);}
+.card.ess:hover{box-shadow:8px 9px 0 var(--rd);}
+
+.mr{position:absolute;top:0;right:18px;font-family:'Black Han Sans',sans-serif;font-size:10px;background:var(--rd);color:#fff;padding:4px 12px 5px;border-radius:0 0 10px 10px;letter-spacing:.6px;z-index:3;}
+.ctb{height:7px;width:100%;}
+.ci{padding:16px 18px 14px;}
+.ctr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:7px;}
+.cname{font-family:'Boogaloo',sans-serif;font-size:21px;color:var(--bk);line-height:1.2;flex:1;}
+.sw{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
+.sn{font-family:'Black Han Sans',sans-serif;font-size:23px;line-height:1;}
+.sl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:rgba(0,0,0,.4);}
+
+.bgs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px;}
+.badge{font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;padding:2px 8px;border-radius:9px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+.bp{background:#FFE4D8;color:#b83600;border:1.5px solid var(--o);}
+.bo{background:#D3F7F2;color:#006558;border:1.5px solid var(--tl);}
+.bh{background:#ECD9F7;color:#4a0e80;border:1.5px solid var(--pu);}
+.bm{background:#FFE4D8;color:#a02000;border:1.5px solid var(--o);}
+.bf{background:#D9E3FF;color:#0020b0;border:1.5px solid var(--bl);}
+.bpi{background:#D7F7DC;color:#186228;border:1.5px solid var(--gn);}
+.bc{background:#F3E0FF;color:#4a0e80;border:1.5px solid var(--pu);}
+.bk{background:#FFD9EE;color:#8b0050;border:1.5px solid var(--pk);}
+
+.meta{display:flex;gap:12px;margin-bottom:9px;flex-wrap:wrap;}
+.mi{font-size:13px;color:#555;display:flex;align-items:center;gap:3px;}
+.desc{font-size:13px;color:#3a3a3a;line-height:1.55;margin-bottom:9px;}
+.who{font-size:12px;background:#F5F0FF;border-left:3px solid var(--pu);padding:6px 10px;border-radius:0 8px 8px 0;color:#333;margin-bottom:9px;line-height:1.45;}
+.who strong{color:var(--pu);}
+.tip{font-size:12px;background:var(--y);border-radius:8px;padding:6px 10px 6px 26px;color:var(--bk);margin-bottom:9px;line-height:1.45;position:relative;}
+.tip::before{content:'★';position:absolute;left:8px;top:6px;font-size:12px;color:var(--o);}
+
+.cf{display:flex;align-items:center;justify-content:space-between;padding-top:9px;border-top:2px dashed rgba(0,0,0,.1);gap:8px;}
+.ct{font-family:'Boogaloo',sans-serif;font-size:13px;padding:3px 11px;border-radius:8px;background:#F4F4F4;color:#555;border:1.5px solid #ddd;}
+.ctf{background:#D7F7DC;color:#186228;border-color:var(--gn);}
+.ctl{background:#FFF5CC;color:#7a5200;border-color:var(--y);}
+.ctm{background:#FFE4D8;color:#b83600;border-color:var(--o);}
+.cth{background:#F7D8D8;color:#8b0000;border-color:var(--rd);}
+.cl{font-family:'Boogaloo',sans-serif;font-size:14px;background:var(--bk);color:var(--y);padding:5px 15px;border-radius:20px;text-decoration:none;border:2px solid var(--bk);transition:background .13s;white-space:nowrap;}
+.cl:hover{background:var(--pu);border-color:var(--pu);}
+
+.nope{text-align:center;padding:60px 20px;font-family:'Boogaloo',sans-serif;font-size:22px;color:#bbb;display:none;}
+.nope.show{display:block;}
+
+@media(max-width:620px){
+  .hi{padding:16px;}.lt h1{font-size:26px;}.hr{display:none;}
+  .tb{padding:10px 14px;}main{padding:20px 12px 60px;}
+  .cg{grid-template-columns:1fr;}.tbs{margin-left:0;width:100%;}.tbs input{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div class="mbg">
+<svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="70" cy="130" r="55" fill="#FF6B35" opacity=".055"/>
+  <circle cx="1370" cy="210" r="85" fill="#00D4C8" opacity=".055"/>
+  <rect x="1290" y="580" width="75" height="75" rx="10" fill="#8B31D4" opacity=".055" transform="rotate(22 1327 617)"/>
+  <circle cx="190" cy="760" r="45" fill="#FF3FA4" opacity=".055"/>
+  <rect x="590" y="40" width="55" height="55" rx="7" fill="#FFE034" opacity=".07" transform="rotate(38 617 67)"/>
+  <circle cx="1110" cy="810" r="65" fill="#FF6B35" opacity=".045"/>
+  <rect x="35" y="390" width="48" height="48" rx="6" fill="#1B4FFF" opacity=".055" transform="rotate(-18 59 414)"/>
+  <circle cx="720" cy="860" r="38" fill="#30D158" opacity=".055"/>
+  <path d="M200 50 Q230 30 260 50 Q290 70 320 50" stroke="#FF3FA4" stroke-width="3" fill="none" opacity=".12"/>
+  <path d="M900 800 Q930 780 960 800 Q990 820 1020 800" stroke="#FFE034" stroke-width="3" fill="none" opacity=".12"/>
+  <circle cx="450" cy="150" r="5" fill="#1B4FFF" opacity=".1"/>
+  <circle cx="1000" cy="300" r="6" fill="#FF6B35" opacity=".1"/>
+  <circle cx="300" cy="600" r="4" fill="#8B31D4" opacity=".1"/>
+  <circle cx="1200" cy="500" r="5" fill="#FF3FA4" opacity=".1"/>
+  <polygon points="80,820 110,760 140,820" fill="#FFE034" opacity=".08"/>
+  <polygon points="1350,100 1380,50 1410,100" fill="#FF3FA4" opacity=".08"/>
+</svg>
+</div>
+
+<header>
+  <div class="hs"></div>
+  <div class="hi">
+    <div class="lw">
+      <div class="lm">🎬<br>2025<br>–26</div>
+      <div class="lt">
+        <h1>Animation Circuit</h1>
+        <p>The European Indie Producer's Conference Guide</p>
+      </div>
+    </div>
+    <div class="hr">Every event worth packing<br>your bag for 📡 ✈️</div>
+  </div>
+</header>
+
+<div class="tb">
+  <span class="tbl">Show:</span>
+  <button class="pill on" data-f="all">All Events</button>
+  <button class="pill" data-f="hot">🔥 Must-Attend Only</button>
+  <div class="tbdiv"></div>
+  <span class="tbl">Focus:</span>
+  <button class="pill" data-f="market">🛒 Market</button>
+  <button class="pill" data-f="festival">🎬 Festival</button>
+  <button class="pill" data-f="pitching">🎤 Pitching</button>
+  <button class="pill" data-f="copro">🤝 Co-Pro</button>
+  <button class="pill" data-f="online">💻 Online Only</button>
+  <div class="tbdiv"></div>
+  <div class="tbs">
+    <span class="si">🔍</span>
+    <input type="text" id="si" placeholder="Search events…">
+  </div>
+</div>
+
+<main>
+<div class="stats">
+  <div class="sc"><b id="vc">0</b> events shown</div>
+  <div class="sc">🔥 <b id="mc">0</b> must-attend</div>
+  <div class="sc">🌍 18 countries</div>
+  <div class="sc">🗓 Full year 2025–26</div>
+</div>
+
+<div class="leg">
+  <div class="leg-t">HOW TO READ THE CARDS</div>
+  <div class="leg-row">
+    <div class="leg-g">
+      <div class="leg-sub">Worth-it score (for indie European producers)</div>
+      <div class="sg">
+        <div class="sgi"><span class="sgn s5">5</span> Non-negotiable</div>
+        <div class="sgi"><span class="sgn s4">4</span> Highly recommended</div>
+        <div class="sgi"><span class="sgn s3">3</span> Worth considering</div>
+        <div class="sgi"><span class="sgn s2">2</span> Niche / specialist</div>
+      </div>
+    </div>
+    <div class="leg-g">
+      <div class="leg-sub">Cost to attend</div>
+      <div class="leg-it">
+        <span class="ct ctf">Free</span>
+        <span class="ct ctl">€ Low</span>
+        <span class="ct ctm">€€ Mid</span>
+        <span class="ct cth">€€€ High</span>
+      </div>
+    </div>
+    <div class="leg-g">
+      <div class="leg-sub">Focus badges</div>
+      <div class="leg-it">
+        <span class="badge bm">Market</span>
+        <span class="badge bf">Festival</span>
+        <span class="badge bpi">Pitching</span>
+        <span class="badge bc">Co-Pro</span>
+        <span class="badge bk">Kids</span>
+        <span class="badge bo">Online</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ec"></div>
+<div class="nope" id="np">😢 Nothing matches — try widening your filters!</div>
+</main>
+
+<script>
+const DATA=[
+  {month:"January",mn:1,items:[
+    {name:"Kidscreen Summit",dates:"Jan 26–29, 2026",loc:"Miami, USA",format:["physical"],focus:["market","kids","pitching"],score:5,ess:true,desc:"The world's biggest kids entertainment market. Broadcasters, streamers and producers gather for a week of screenings, speed meetings and the famous pitching competition.",who:"Netflix Kids, Disney+, BBC Children's, Cartoon Network, Nickelodeon, and every major global streamer. Unrivalled North American buyer density.",tip:"Book speed meetings 6 weeks in advance — slots sell out completely. The cocktail receptions are where the real conversations start.",cost:"cth",clab:"€€€ High",link:"https://kidscreen.com/summit/",bar:"linear-gradient(90deg,#FF2D55,#FF6B35)"},
+    {name:"European Producers Club Forum",dates:"Late Jan 2026",loc:"Online / Brussels",format:["hybrid"],focus:["copro","market"],score:3,ess:false,desc:"EPC's annual gathering of European independent producers, covering policy, co-production and market conditions across the continent.",who:"European indie producers, policy makers, funding body representatives.",tip:"Great for building co-production relationships with mainland European partners before the festival season kicks off.",cost:"ctl",clab:"€ Low",link:"https://www.epc-producers.eu",bar:"linear-gradient(90deg,#8B31D4,#1B4FFF)"}
+  ]},
+  {month:"February",mn:2,items:[
+    {name:"Berlinale — EFM & Generation",dates:"Feb 12–22, 2026",loc:"Berlin, Germany",format:["physical"],focus:["market","festival","kids"],score:3,ess:false,desc:"The European Film Market at Berlinale is Europe's first major market of the year. The Generation sidebar is a prestigious showcase for children's content — winning here is career-changing for animation directors.",who:"International distributors, sales agents, festival programmers. Target the Generation programme specifically for kids animation.",tip:"Submit to Generation early — the section has launched animation careers. The market badge is cheaper than full festival accreditation.",cost:"ctm",clab:"€€ Mid",link:"https://www.berlinale.de/en/market/",bar:"linear-gradient(90deg,#1B4FFF,#8B31D4)"},
+    {name:"Cartoon Forum Online Preview",dates:"Feb 2026",loc:"Online",format:["online"],focus:["copro","pitching","kids"],score:3,ess:false,desc:"Early digital preview sessions for Cartoon Forum participants — European producers scout potential co-production partners before the main September event.",who:"Pre-selected European animation producers and TV commissioners.",tip:"If you're planning Cartoon Forum, use this to initiate conversations with potential partners months in advance.",cost:"ctl",clab:"€ Low",link:"https://www.cartoon-media.eu/cartoon-forum/",bar:"linear-gradient(90deg,#00D4C8,#30D158)"}
+  ]},
+  {month:"March",mn:3,items:[
+    {name:"Cartoon Movie",dates:"Mar 3–5, 2026",loc:"Bordeaux, France",format:["physical"],focus:["copro","market","pitching"],score:4,ess:false,desc:"Europe's premiere animated feature film co-production forum. Projects are pitched to investors, distributors and broadcasters in a curated, highly competitive format. Essential if features or premium long-form are on your slate.",who:"Feature animation financiers, pan-European distributors, broadcasters with feature film mandates (ZDF, France TV, RAI).",tip:"Apply in November for March selection. The informal evening dinners are as valuable as the daytime pitches.",cost:"ctm",clab:"€€ Mid",link:"https://www.cartoon-media.eu/cartoon-movie/",bar:"linear-gradient(90deg,#FF6B35,#FF3FA4)"},
+    {name:"Series Mania Forum",dates:"Mar 13–18, 2026",loc:"Lille, France",format:["physical"],focus:["market","pitching","copro"],score:3,ess:false,desc:"Europe's leading serialised content market and festival. Animation co-exists with live action; the co-production forum is strong for European distribution and financing deals — especially useful for teen and adult animation.",who:"European broadcasters, streaming platforms, sales agents. Strong French, Belgian and German delegations.",tip:"The pitching competitions are genuinely competitive but transformative for European distribution deals.",cost:"ctm",clab:"€€ Mid",link:"https://seriesmania.com/en/forum/",bar:"linear-gradient(90deg,#8B31D4,#FF3FA4)"}
+  ]},
+  {month:"April",mn:4,items:[
+    {name:"MIPJunior & MIPTV",dates:"Apr 4–7, 2026",loc:"Cannes, France",format:["physical"],focus:["market","kids","copro"],score:5,ess:true,desc:"MIPJunior is the world's leading kids content market, running alongside MIPTV at the Palais. Essential for every European indie producer — unmatched buyer access in a concentrated two-day format.",who:"BBC, ZDF, France Télévisions, RAI, SVT, NRK, YLE, VPRO, Nickelodeon, Netflix, Disney+ and every major global kids broadcaster.",tip:"Get MIPJunior-specific accreditation — it's cheaper than full MIPTV and the kids-only networking is more productive. Upload screeners 3 weeks before.",cost:"cth",clab:"€€€ High",link:"https://www.mipjunior.com",bar:"linear-gradient(90deg,#FF2D55,#FF6B35)"}
+  ]},
+  {month:"May",mn:5,items:[
+    {name:"Cartoon Connection",dates:"May 2026",loc:"Online",format:["online"],focus:["copro","pitching","kids"],score:3,ess:false,desc:"Online co-production event by Cartoon Media, bringing together European animation producers and broadcasters in structured pitching and one-to-one meetings.",who:"European broadcasters, animation producers, national film funding bodies.",tip:"A cost-effective way to test European co-production appetite before committing to the Cartoon Forum application process.",cost:"ctl",clab:"€ Low",link:"https://www.cartoon-media.eu",bar:"linear-gradient(90deg,#00D4C8,#1B4FFF)"},
+    {name:"Hot Docs Forum",dates:"May 1–5, 2026",loc:"Toronto, Canada",format:["physical"],focus:["market","pitching","copro"],score:3,ess:false,desc:"Premier documentary co-financing forum — essential for animated documentary producers seeking international partners and presales.",who:"Documentary commissioners covering animated docs: Arte, ZDF, Channel 4, BBC, NHK, CBC.",tip:"Arte and ZDF are reliably present and actively seeking animated documentary. Worth the trip if animated doc is a strand of your work.",cost:"ctm",clab:"€€ Mid",link:"https://hotdocs.ca/forum/",bar:"linear-gradient(90deg,#FF6B35,#FFE034)"}
+  ]},
+  {month:"June",mn:6,items:[
+    {name:"Annecy & MIFA",dates:"Jun 8–13, 2026",loc:"Annecy, France",format:["physical"],focus:["festival","market","pitching","copro","kids"],score:5,ess:true,desc:"The most important animation event on the planet. MIFA is the market; the Pitches & Screenings programme is unmissable. The place to be seen, signed and to close deals. No other event comes close.",who:"Every producer, broadcaster, streamer, distributor and financier in global animation. Netflix, Disney+, BBC, Sony, Cartoon Saloon, all of them, all week.",tip:"Arrive Sunday and stay all week. Book accommodation 6 months out — it sells out completely. The Pitches selection is career-defining. Evening networking matters as much as meetings.",cost:"cth",clab:"€€€ High",link:"https://www.annecy.org/mifa",bar:"linear-gradient(90deg,#FF2D55,#8B31D4,#1B4FFF)"},
+    {name:"Animafest Zagreb",dates:"Jun 1–6, 2026",loc:"Zagreb, Croatia",format:["physical"],focus:["festival","kids"],score:3,ess:false,desc:"One of Europe's oldest and most respected animation festivals. Significant short film and kids strand. Excellent entry point for Eastern European co-production contacts.",who:"European arthouse animation directors, festival programmers, Croatian, Slovenian and Balkan producers.",tip:"Warm atmosphere. Great for Croatian, Slovenian and Serbian co-production introductions and Balkan funding routes.",cost:"ctl",clab:"€ Low",link:"https://animafest.hr",bar:"linear-gradient(90deg,#1B4FFF,#00D4C8)"},
+    {name:"Screen Ireland BroadcastExchange",dates:"Jun 2026",loc:"Dublin, Ireland",format:["physical"],focus:["copro","market","kids"],score:3,ess:false,desc:"Screen Ireland's annual market connecting Irish producers with international buyers. Strong opportunity for UK/Irish co-production and access to Irish animation talent.",who:"Irish and UK commissioners, European buyers, Irish animation studios (Brown Bag, Cartoon Saloon ecosystem).",tip:"Essential if you're pursuing Irish co-production. Key for Section 481 funding routes and TG4 relationships.",cost:"ctl",clab:"€ Low",link:"https://www.screenireland.ie",bar:"linear-gradient(90deg,#30D158,#FFE034)"}
+  ]},
+  {month:"July",mn:7,items:[
+    {name:"CMC — Children's Media Conference",dates:"Jul 1–3, 2026",loc:"Sheffield, UK",format:["physical"],focus:["market","kids","pitching"],score:5,ess:true,desc:"The UK's most important kids media gathering. Three days at the Crucible and Showroom — every UK commissioner attends, plus major European and international buyers. The heartbeat of the British kids industry.",who:"BBC Children's (CBBC & CBeebies), ITV, Channel 4, Sky, Disney+ UK, Netflix UK, plus French, German and Nordic commissioners.",tip:"The Speed Pitch sessions are brilliantly run — submit early, spaces are limited. Sunday evening drinks are where the best conversations start. Don't leave before Thursday night.",cost:"ctm",clab:"€€ Mid",link:"https://www.thechildrensmediaconference.com",bar:"linear-gradient(90deg,#FF2D55,#FF3FA4)"},
+    {name:"Giffoni Film Festival",dates:"Jul 17–26, 2026",loc:"Giffoni, Italy",format:["physical"],focus:["festival","kids"],score:2,ess:false,desc:"Italy's major children's film festival — one of the most celebrated in the world for young audiences. Best suited to producers actively targeting the Italian market.",who:"RAI, Mediaset Kids, Italian animation producers, European festival contacts.",tip:"Primarily valuable for the Italian market and RAI relationship. Lower priority unless Italy is a specific co-production target.",cost:"ctl",clab:"€ Low",link:"https://www.giffonifilmfestival.it",bar:"linear-gradient(90deg,#30D158,#FFE034)"}
+  ]},
+  {month:"September",mn:9,items:[
+    {name:"Cartoon Forum",dates:"Sep 8–11, 2026",loc:"Toulouse, France",format:["physical"],focus:["copro","market","pitching","kids"],score:5,ess:true,desc:"The most important European animation co-production event. Selected producers pitch TV animation to buyers in a curated, structured format over three days. This is where European co-productions are born.",who:"All major European broadcasters: ZDF, France Télévisions, SVT, DR, NRK, YLE, VPRO, RAI, RTÉ, TG4, BBC, RTBF — plus sales agents and distributors.",tip:"Apply with your strongest project — selection is competitive. Fill your one-to-one meetings schedule strategically. The broadcasters you meet here become your co-production partners for the next three years.",cost:"ctm",clab:"€€ Mid",link:"https://www.cartoon-media.eu/cartoon-forum/",bar:"linear-gradient(90deg,#FF6B35,#FF2D55)"},
+    {name:"Animation Dingle",dates:"Sep 25–27, 2026",loc:"Dingle, Ireland",format:["physical"],focus:["festival","copro","kids"],score:4,ess:false,desc:"Ireland's specialist animation festival, focused on Celtic and European animation with a strong kids strand. Boutique, intimate and remarkably productive for its size.",who:"Irish, UK and European animation studios. Screen Ireland, TG4, RTÉ, BBC commissioners attend. The Cartoon Saloon team is usually present.",tip:"One of the warmest and most productive small festivals in Europe. The informal sessions deliver real introductions. Unmissable if you're targeting the Irish market.",cost:"ctl",clab:"€ Low",link:"https://www.animationdingle.com",bar:"linear-gradient(90deg,#30D158,#00D4C8)"},
+    {name:"Sunny Side of the Doc",dates:"Sep 2026",loc:"La Rochelle, France",format:["physical"],focus:["market","copro"],score:3,ess:false,desc:"International documentary co-production market. Valuable for animated documentary producers targeting Arte, ZDF and French-German co-production routes.",who:"Arte, ZDF, France TV, Channel 4, BBC documentary commissioners. Strong French-German co-production focus.",tip:"Arte is always strongly represented. Prioritise if animated documentary is a meaningful part of your slate.",cost:"ctm",clab:"€€ Mid",link:"https://www.sunnysideofthedoc.com",bar:"linear-gradient(90deg,#FFE034,#FF6B35)"}
+  ]},
+  {month:"October",mn:10,items:[
+    {name:"MIPCOM & MIPJunior (Autumn)",dates:"Oct 12–15 / Oct 11, 2026",loc:"Cannes, France",format:["physical"],focus:["market","kids","copro"],score:5,ess:true,desc:"The world's biggest content market. MIPJunior runs the weekend before, dedicated entirely to kids content. The autumn edition often sees bigger buyer attendance than spring MIPTV — this is where the commissioning year is sealed.",who:"Every major international broadcaster, streamer and distributor. The single biggest concentration of kids buyers of the year.",tip:"MIPJunior is the non-negotiable event — pre-register and upload your full screener catalogue at least 6 weeks before. The MIPJunior Screenings programme is highly prestigious.",cost:"cth",clab:"€€€ High",link:"https://www.mipcom.com",bar:"linear-gradient(90deg,#FF2D55,#FF6B35)"},
+    {name:"MIFA Online — Autumn Edition",dates:"Oct 2026",loc:"Online",format:["online"],focus:["market","copro","kids"],score:3,ess:false,desc:"Digital extension of the Annecy/MIFA platform, hosting virtual pitches, meetings and screenings for animation professionals in the autumn.",who:"Animation producers and buyers continuing conversations from Annecy or unable to attend in person.",tip:"More useful for follow-up on Annecy conversations than new introductions. Good for maintaining relationships at low cost.",cost:"ctl",clab:"€ Low",link:"https://www.annecy.org/mifa",bar:"linear-gradient(90deg,#1B4FFF,#8B31D4)"}
+  ]},
+  {month:"November",mn:11,items:[
+    {name:"BAFTA Children's Awards",dates:"Nov 29, 2026",loc:"London, UK",format:["physical"],focus:["festival","kids"],score:3,ess:false,desc:"The UK's premier children's media awards ceremony. A superb networking event — every UK kids commissioner attends, making it one of the most concentrated rooms of the year.",who:"BBC, ITV, Channel 4, Sky, BAFTA members, senior UK media figures. Almost every UK kids commissioner in one room, in one evening.",tip:"Attend even without entering — the ceremony and drinks put you with the full UK commissioning community in one night.",cost:"ctm",clab:"€€ Mid",link:"https://www.bafta.org/children",bar:"linear-gradient(90deg,#FF3FA4,#8B31D4)"},
+    {name:"Nordisk Film & TV Fond Forum",dates:"Nov 2026",loc:"Copenhagen, Denmark",format:["physical"],focus:["copro","market","kids"],score:3,ess:false,desc:"Nordic co-production and financing forum covering film and TV, including animation. Key access point for Scandinavian broadcaster relationships and Nordisk fund routes.",who:"SVT, DR, NRK, YLE, Danish, Swedish, Norwegian and Finnish film funds.",tip:"Essential if you're targeting Scandinavian co-production. Well-organised and less crowded than the major markets — relationships come more easily here.",cost:"ctm",clab:"€€ Mid",link:"https://www.nordiskfilmogtvfond.com",bar:"linear-gradient(90deg,#00D4C8,#1B4FFF)"},
+    {name:"Cartoon Masters Webinars",dates:"Nov 2026",loc:"Online",format:["online"],focus:["pitching","copro","kids"],score:3,ess:false,desc:"Cartoon Media's professional development programme covering pitching, financing and co-production for animation. Often features senior commissioners sharing insider knowledge.",who:"Mid-career animation producers, development executives, new entrants to the European market.",tip:"Free or very low-cost with genuinely senior speakers. Worth a morning of your time.",cost:"ctf",clab:"Free",link:"https://www.cartoon-media.eu",bar:"linear-gradient(90deg,#30D158,#00D4C8)"}
+  ]},
+  {month:"December",mn:12,items:[
+    {name:"BAFTA Kids Screenings & Voting",dates:"Dec 2026",loc:"Online / London",format:["hybrid"],focus:["festival","kids"],score:2,ess:false,desc:"BAFTA Children's voting and screener access period — useful for producers with eligible content to ensure their work is in front of BAFTA voters.",who:"BAFTA members, UK producers, children's content commissioners.",tip:"Register eligible content early and promote to BAFTA voters during the window.",cost:"ctf",clab:"Free",link:"https://www.bafta.org/children",bar:"linear-gradient(90deg,#FFE034,#FF6B35)"},
+    {name:"ReFrame — Kids Co-Production Forum",dates:"Dec 2026",loc:"Online",format:["online"],focus:["copro","kids","pitching"],score:2,ess:false,desc:"End-of-year online co-production forum focused on kids and family content — a low-pressure way to plant seeds for the new commissioning cycle.",who:"European kids commissioners and indie producers looking to set up conversations for the new year.",tip:"Low-cost relationship maintenance. Good for scheduling January/February follow-up meetings.",cost:"ctf",clab:"Free",link:"#",bar:"linear-gradient(90deg,#8B31D4,#FF3FA4)"}
+  ]}
+];
+
+function sc(s){return s>=5?'s5':s>=4?'s4':s>=3?'s3':'s2';}
+
+function bgs(format,focus){
+  let h='';
+  const fl={physical:'bp',online:'bo',hybrid:'bh'};
+  const fc={market:'bm',festival:'bf',pitching:'bpi',copro:'bc',kids:'bk'};
+  const fn={physical:'Physical',online:'Online',hybrid:'Hybrid',market:'Market',festival:'Festival',pitching:'Pitching',copro:'Co-Pro',kids:'Kids'};
+  format.forEach(f=>h+=`<span class="badge ${fl[f]}">${fn[f]}</span>`);
+  focus.forEach(f=>{if(fc[f])h+=`<span class="badge ${fc[f]}">${fn[f]}</span>`;});
+  return h;
+}
+
+function card(ev){
+  const tags=[...ev.format,...ev.focus].join(' ');
+  const sd=[ev.name,ev.loc,ev.desc,...ev.focus].join(' ').toLowerCase();
+  return `<div class="card${ev.ess?' ess':''}" data-tags="${tags}" data-sd="${sd}" data-ess="${ev.ess?1:0}">
+    ${ev.ess?'<div class="mr">🔥 MUST ATTEND</div>':''}
+    <div class="ctb" style="background:${ev.bar}"></div>
+    <div class="ci">
+      <div class="ctr">
+        <div class="cname">${ev.name}</div>
+        <div class="sw"><div class="sn ${sc(ev.score)}">${ev.score}/5</div><div class="sl">Worth it</div></div>
+      </div>
+      <div class="bgs">${bgs(ev.format,ev.focus)}</div>
+      <div class="meta"><div class="mi">📅 ${ev.dates}</div><div class="mi">📍 ${ev.loc}</div></div>
+      <div class="desc">${ev.desc}</div>
+      <div class="who"><strong>Who attends:</strong> ${ev.who}</div>
+      <div class="tip">${ev.tip}</div>
+      <div class="cf">
+        <span class="ct ${ev.cost}">${ev.clab}</span>
+        <a class="cl" href="${ev.link}" target="_blank">Visit site →</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+function render(){
+  let h='';
+  DATA.forEach(m=>{
+    h+=`<div class="mb" id="mb${m.mn}">
+      <div class="mhdr">
+        <div class="mn">${m.month}</div>
+        <div class="mdash"></div>
+        <div class="mtal" id="mt${m.mn}">${m.items.length} event${m.items.length!==1?'s':''}</div>
+      </div>
+      <div class="cg">${m.items.map(card).join('')}</div>
+    </div>`;
+  });
+  document.getElementById('ec').innerHTML=h;
+  const tot=DATA.reduce((a,m)=>a+m.items.length,0);
+  const mus=DATA.reduce((a,m)=>a+m.items.filter(i=>i.ess).length,0);
+  document.getElementById('vc').textContent=tot;
+  document.getElementById('mc').textContent=mus;
+}
+
+let af=new Set(['all']);
+
+function applyF(){
+  const sv=document.getElementById('si').value.toLowerCase();
+  let vis=0,mus=0;
+  document.querySelectorAll('.card').forEach(c=>{
+    const tags=c.dataset.tags.split(' ');
+    const ess=c.dataset.ess==='1';
+    let show=true;
+    if(!af.has('all')){
+      if(af.has('hot')&&!ess){show=false;}
+      if(show){
+        const fmts=['physical','online','hybrid'].filter(f=>af.has(f));
+        if(fmts.length>0&&!fmts.some(f=>tags.includes(f)))show=false;
+      }
+      if(show){
+        const focs=['market','festival','pitching','copro'].filter(f=>af.has(f));
+        const onlyOnline=af.has('online')&&!af.has('hot')&&focs.length===0;
+        if(onlyOnline&&!tags.includes('online'))show=false;
+        if(!onlyOnline&&focs.length>0&&!focs.some(f=>tags.includes(f)))show=false;
+      }
+    }
+    if(show&&sv&&!c.dataset.sd.includes(sv))show=false;
+    c.classList.toggle('out',!show);
+    if(show){vis++;if(ess)mus++;}
+  });
+  document.getElementById('vc').textContent=vis;
+  document.getElementById('mc').textContent=mus;
+  document.getElementById('np').classList.toggle('show',vis===0);
+  DATA.forEach(m=>{
+    const mb=document.getElementById('mb'+m.mn);if(!mb)return;
+    const v=mb.querySelectorAll('.card:not(.out)').length;
+    mb.classList.toggle('gone',v===0);
+    const t=document.getElementById('mt'+m.mn);
+    if(t)t.textContent=v+' event'+(v!==1?'s':'');
+  });
+}
+
+document.querySelectorAll('.pill').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const f=b.dataset.f;
+    if(f==='all'){af.clear();af.add('all');}
+    else{af.delete('all');if(af.has(f)){af.delete(f);if(af.size===0)af.add('all');}else af.add(f);}
+    document.querySelectorAll('.pill').forEach(x=>x.classList.toggle('on',af.has(x.dataset.f)));
+    applyF();
+  });
+});
+document.getElementById('si').addEventListener('input',applyF);
+render();
+</script>
+</body>
+</html>
